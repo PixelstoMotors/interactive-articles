@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAY 190 ── DESCEND後に見えた次の壁 | Pixels to Motors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --white: #f5f5f0;
+  --gray-light: #e8e8e3;
+  --gray-mid: #999;
+  --gray-dark: #444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+.article-root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--black);
+  margin: 0 -24px;
+  padding: 12px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.topbar .brand { font-weight: 700; }
+.topbar a { color: inherit; text-decoration: none; transition: opacity 0.15s ease; }
+.topbar a:hover { opacity: 0.55; }
+.topbar .brand-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--black); border-radius: 50%;
+  margin-right: 8px; transform: translateY(-1px);
+}
+.topbar .day-tag { border: 1px solid var(--black); padding: 4px 10px; font-weight: 700; }
+
+/* Hero */
+.hero { padding: 48px 0 32px; border-bottom: 1.5px solid var(--black); margin-bottom: 48px; }
+.hero-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 16px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.hero-label span { display: flex; align-items: center; gap: 6px; }
+.hero-label span::before {
+  content: ""; width: 4px; height: 4px;
+  background: var(--black); border-radius: 50%;
+}
+.hero h1 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700; line-height: 1.25;
+  letter-spacing: -0.01em; margin-bottom: 32px;
+}
+
+/* Hero遷移図 */
+.hero-transition {
+  border: 1.5px solid var(--black);
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  align-items: stretch;
+}
+.hero-trans-col { padding: 22px 22px; }
+.hero-trans-col.from { background: var(--white); }
+.hero-trans-col.to { background: var(--black); color: var(--white); }
+.hero-trans-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 24px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.hero-trans-col .step {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 8px; opacity: 0.7;
+}
+.hero-trans-col .label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700; margin-bottom: 12px;
+}
+.hero-trans-col .icons {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.hero-trans-col .icon-pill {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.05em;
+}
+
+/* Takeaway */
+.takeaway {
+  background: var(--black); color: var(--white);
+  padding: 28px 28px; margin-bottom: 64px;
+  border: 1.5px solid var(--black);
+}
+.takeaway-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-light);
+  margin-bottom: 16px; opacity: 0.7;
+}
+.takeaway-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.takeaway-card { border: 1px solid var(--white); padding: 16px; }
+.takeaway-card .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; margin-bottom: 8px;
+}
+.takeaway-card .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 8px; line-height: 1.45;
+}
+.takeaway-card .detail { font-size: 11.5px; line-height: 1.6; opacity: 0.85; }
+
+/* Section */
+.article-section { margin-bottom: 80px; }
+.section-marker {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 12px;
+}
+.section-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.08em; color: var(--gray-dark);
+}
+.section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+}
+.section-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 700; line-height: 1.4;
+  margin-bottom: 28px; letter-spacing: 0.01em;
+}
+
+/* Widget */
+.widget {
+  border: 1.5px solid var(--black);
+  padding: 22px 20px;
+  background: var(--white);
+  margin: 20px 0;
+}
+.widget-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 6px;
+}
+.widget-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 18px; letter-spacing: 0.02em; line-height: 1.4;
+}
+
+/* Scene */
+.scene-wrap {
+  border: 1px solid var(--black);
+  background: var(--white);
+  margin-bottom: 14px;
+  padding: 16px 12px;
+}
+.scene-svg { display: block; width: 100%; height: auto; }
+
+/* Cards */
+.cards-2, .cards-3, .cards-4 { display: grid; gap: 10px; }
+.cards-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-4 { grid-template-columns: repeat(4, 1fr); }
+.card { border: 1px solid var(--black); padding: 12px; }
+.card.filled { background: var(--black); color: var(--white); }
+.card-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px; opacity: 0.7;
+}
+.card-name { font-size: 13px; font-weight: 600; line-height: 1.45; margin-bottom: 4px; }
+.card-detail { font-size: 11.5px; line-height: 1.55; opacity: 0.85; }
+
+/* Value Card */
+.value-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+.value-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.value-row.cols-6 { grid-template-columns: repeat(6, 1fr); }
+.value-card {
+  border: 1.5px solid var(--black);
+  padding: 18px 16px;
+  text-align: center;
+  position: relative;
+}
+.value-card.filled { background: var(--black); color: var(--white); }
+.value-card.struck { background: var(--gray-light); opacity: 0.85; }
+.value-card .v-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 28px; font-weight: 700;
+  line-height: 1; margin-bottom: 4px;
+}
+.value-row.cols-6 .v-num { font-size: 18px; }
+.value-card.struck .v-num { text-decoration: line-through; text-decoration-thickness: 2px; }
+.value-card .v-unit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  display: inline-block;
+  font-weight: 700;
+}
+.value-card.struck .v-tag { background: var(--black); color: var(--white); }
+
+/* Keyphrase Block */
+.keyphrase-block {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 60px 1fr 100px;
+  align-items: stretch;
+}
+.keyphrase-block.dark { background: var(--black); color: var(--white); }
+.keyphrase-mark {
+  background: var(--black); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 32px; font-weight: 700;
+}
+.keyphrase-block.dark .keyphrase-mark { background: var(--white); color: var(--black); }
+.keyphrase-body {
+  padding: 20px 22px;
+  display: flex; align-items: center;
+}
+.keyphrase-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(15px, 2vw, 19px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.keyphrase-source {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px;
+  border-left: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+}
+.keyphrase-block.dark .keyphrase-source { border-left-color: var(--white); }
+
+/* Spec Grid */
+.spec-block {
+  background: var(--black); color: var(--white);
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+}
+.spec-block-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(245, 245, 240, 0.2);
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px;
+}
+.spec-block-header .stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; text-transform: uppercase;
+}
+.spec-block-header .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+}
+.spec-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.spec-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.spec-item {
+  padding: 18px 14px;
+  text-align: center;
+  border-right: 1px solid rgba(245, 245, 240, 0.2);
+}
+.spec-item:last-child { border-right: none; }
+.spec-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 10px; line-height: 1;
+}
+.spec-key {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 6px;
+}
+.spec-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700; line-height: 1.3;
+}
+
+/* Concern Card */
+.concern-card {
+  border: 2px dashed var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+}
+.concern-icon-wrap {
+  display: flex; align-items: center; justify-content: center;
+  border-right: 2px dashed var(--black);
+}
+.concern-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 36px; font-weight: 700;
+}
+.concern-body { padding: 16px 18px; }
+.concern-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 4px;
+}
+.concern-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.concern-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.concern-stat {
+  border: 1px solid var(--black);
+  padding: 8px 10px;
+  text-align: center;
+}
+.concern-stat .k {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 4px;
+}
+.concern-stat .v {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+}
+.concern-action {
+  margin-top: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  background: var(--black);
+  color: var(--white);
+  display: inline-block;
+}
+
+/* Before/After */
+.before-after {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+}
+.ba-col { padding: 22px 18px; }
+.ba-col.before { background: var(--white); }
+.ba-col.after { background: var(--black); color: var(--white); }
+.ba-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 26px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.ba-stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 14px; opacity: 0.6;
+}
+.ba-icon-row {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 26px; font-weight: 700;
+  line-height: 1;
+}
+.ba-name {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.ba-axes { display: flex; flex-direction: column; gap: 6px; }
+.ba-axis {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+}
+.ba-axis .axis-name { font-weight: 700; }
+.ba-axis .axis-status { opacity: 0.8; }
+
+/* Tag Set */
+.tag-set {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 12px;
+}
+.tag-set .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.04em;
+}
+.tag-set .tag.solid { background: currentColor; }
+.tag-set .tag.solid span { color: var(--white); }
+.panel-body .tag-set .tag.solid span { color: var(--white); }
+
+/* Compare */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare-col { border: 1.5px solid var(--black); }
+.compare-col.adopted { background: var(--black); color: var(--white); }
+.compare-col-header {
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.compare-col.adopted .compare-col-header { border-bottom-color: var(--white); }
+.compare-col-header .verdict { font-weight: 700; }
+.compare-col-body { padding: 14px 16px; }
+.compare-list { list-style: none; padding: 0; margin: 0; }
+.compare-list li {
+  font-size: 12.5px; line-height: 1.5;
+  padding: 8px 0 8px 16px;
+  position: relative;
+  border-bottom: 1px solid var(--gray-light);
+}
+.compare-col.adopted .compare-list li { border-bottom-color: rgba(245, 245, 240, 0.15); }
+.compare-list li:last-child { border-bottom: none; }
+.compare-list li::before { content: "—"; position: absolute; left: 0; opacity: 0.6; }
+.compare-list .item-label {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+/* Flow */
+.flow-steps { list-style: none; padding: 0; margin: 0; }
+.flow-step {
+  border: 1.5px solid var(--black);
+  margin-bottom: 10px; background: var(--white);
+  display: grid; grid-template-columns: 56px 1fr;
+  align-items: stretch; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+.flow-step:hover { background: var(--gray-light); }
+.flow-step.active { background: var(--black); color: var(--white); }
+.flow-step:last-child { margin-bottom: 0; }
+.flow-step:not(:last-child)::after {
+  content: ""; position: absolute;
+  left: 28px; bottom: -10px;
+  width: 1.5px; height: 10px;
+  background: var(--black);
+}
+.flow-step-num {
+  background: var(--black); color: var(--white);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.flow-step.active .flow-step-num { background: var(--white); color: var(--black); }
+.flow-step-body { padding: 10px 14px; }
+.flow-step-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px; font-weight: 600; line-height: 1.4;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.flow-step-title .toggle-mark { font-size: 11px; opacity: 0.5; transition: transform 0.2s; }
+.flow-step.active .flow-step-title .toggle-mark { transform: rotate(45deg); opacity: 1; }
+.flow-step-tags {
+  display: none;
+  flex-wrap: wrap; gap: 5px;
+  padding-top: 8px; margin-top: 8px;
+  border-top: 1px solid var(--gray-light);
+}
+.flow-step.active .flow-step-tags {
+  display: flex; animation: slideIn 0.2s ease-out;
+  border-top-color: rgba(245, 245, 240, 0.2);
+}
+.flow-step-tags .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5px; letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.flow-step-tags .tag.tag-key { font-weight: 700; opacity: 1; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Pillars */
+.pillars { display: grid; gap: 8px; margin-bottom: 16px; }
+.pillars[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+.pillars[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.pillars[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+.pillar {
+  border: 1.5px solid var(--black);
+  background: var(--white); color: var(--black);
+  padding: 14px 8px; cursor: pointer; text-align: center;
+  transition: background 0.18s, color 0.18s;
+  font-family: "IBM Plex Mono", monospace;
+}
+.pillar:hover { background: var(--gray-light); }
+.pillar.active { background: var(--black); color: var(--white); }
+.pillar-axis { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.pillar-name { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+
+.panel-empty {
+  border: 1px dashed var(--gray-mid);
+  padding: 20px 16px; text-align: center;
+  color: var(--gray-mid); font-size: 11.5px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+}
+.panel-empty .arrow {
+  display: block; font-size: 18px; margin-bottom: 6px;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.panel { display: none; border: 1.5px solid var(--black); animation: slideIn 0.28s ease-out; }
+.panel.active { display: block; }
+.panel-header {
+  background: var(--black); color: var(--white);
+  padding: 12px 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px;
+}
+.panel-header .verdict { font-weight: 700; }
+.panel-body { padding: 16px; }
+
+/* Closing as Before/After */
+.closing-block {
+  margin: 64px 0 32px;
+  border: 1.5px solid var(--black);
+}
+.closing-label {
+  background: var(--black); color: var(--white);
+  padding: 14px 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.closing-grid {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+}
+.closing-side { padding: 32px 28px; }
+.closing-side.before { background: var(--white); }
+.closing-side.after { background: var(--black); color: var(--white); }
+.closing-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 32px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.closing-side .when {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  margin-bottom: 12px; opacity: 0.6;
+}
+.closing-side .world {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.8vw, 24px);
+  font-weight: 700; line-height: 1.35;
+  margin-bottom: 16px;
+}
+.closing-side .seen {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.closing-side .seen-item {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  display: flex; justify-content: space-between;
+}
+
+/* Footer */
+.footer {
+  border-top: 1.5px solid var(--black);
+  padding: 32px 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--gray-dark);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 12px;
+}
+
+/* SVG Illust */
+.illust-line { stroke: var(--black); stroke-width: 1.5; fill: none; }
+.illust-line-bold { stroke: var(--black); stroke-width: 2.5; fill: none; }
+.illust-fill { fill: var(--black); }
+.illust-base { fill: var(--gray-light); stroke: var(--black); stroke-width: 1.5; }
+.illust-white { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.illust-text { font-family: "IBM Plex Mono", monospace; font-size: 9px; fill: var(--black); }
+.illust-text.label { font-weight: 700; }
+.illust-dim { stroke: var(--black); stroke-width: 1; }
+.illust-dim-text { font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 700; fill: var(--black); }
+.illust-blind { stroke: var(--black); stroke-width: 1.2; stroke-dasharray: 3 3; fill: none; opacity: 0.5; }
+.illust-ray { stroke: var(--black); stroke-width: 1; stroke-dasharray: 4 3; fill: none; opacity: 0.5; }
+
+.kinem-illust-wrap {
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  margin: 20px 0;
+  padding: 18px 16px;
+}
+.kinem-illust { width: 100%; height: auto; display: block; }
+
+::selection { background: var(--black); color: var(--white); }
+
+@media (max-width: 720px) {
+  .article-root { padding: 0 16px 60px; }
+  .topbar { margin: 0 -16px; padding: 12px 16px; font-size: 10px; }
+  .hero { padding: 36px 0 24px; }
+  .hero-transition { grid-template-columns: 1fr; }
+  .hero-trans-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .takeaway { padding: 24px 20px; }
+  .takeaway-cards { grid-template-columns: 1fr; }
+  .widget { padding: 18px 14px; }
+  .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
+  .value-row, .value-row.cols-2, .value-row.cols-6 { grid-template-columns: 1fr; }
+  .pillars[data-count="3"], .pillars[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
+  .compare-grid { grid-template-columns: 1fr; }
+  .spec-grid, .spec-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+  .spec-item:nth-child(2) { border-right: none; }
+  .spec-item:nth-child(1), .spec-item:nth-child(2) { border-bottom: 1px solid rgba(245, 245, 240, 0.2); }
+  .panel-header, .compare-col-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .keyphrase-block { grid-template-columns: 48px 1fr; }
+  .keyphrase-source { display: none; }
+  .keyphrase-mark { font-size: 22px; }
+  .concern-card { grid-template-columns: 60px 1fr; }
+  .concern-stats { grid-template-columns: 1fr; }
+  .before-after, .closing-grid { grid-template-columns: 1fr; }
+  .ba-arrow, .closing-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .article-section { margin-bottom: 60px; }
+}
+</style></head>
+<body>
+
+<div class="article-root">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a class="brand" href="https://pixelstomotors.github.io/interactive-articles/" target="_blank" rel="noopener noreferrer"><span class="brand-dot"></span>Pixels to Motors</a>
+    <a class="day-tag" href="https://adaptdesign.jp/pixelstomotors/record/mecharm-descend-tip-shift-two-stage-tracking" target="_blank" rel="noopener noreferrer">DAY 190</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-label">
+      <span>mechArm 270 Pi</span>
+      <span>Log #8</span>
+      <span>動的追従の限界</span>
+    </div>
+    <h1>DESCEND後に見えた次の壁 ── 把持姿勢への二段追従という問い</h1>
+
+    <div class="hero-transition">
+      <div class="hero-trans-col from">
+        <div class="step">FROM / Log #7</div>
+        <div class="label">動的追従ループは収束した</div>
+        <div class="icons">
+          <span class="icon-pill">2D dist 2.9mm</span>
+          <span class="icon-pill">DESCEND前 IndexError</span>
+          <span class="icon-pill">把持シーケンス未到達</span>
+        </div>
+      </div>
+      <div class="hero-trans-arrow">→</div>
+      <div class="hero-trans-col to">
+        <div class="step">TO / Log #8</div>
+        <div class="label">DESCEND完走、それでも掴めない</div>
+        <div class="icons">
+          <span class="icon-pill">送/着ズレ実測</span>
+          <span class="icon-pill">TIP_X 61.4mm シフト</span>
+          <span class="icon-pill">運動学の壁</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY TAKEAWAY -->
+  <section class="takeaway">
+    <div class="takeaway-label">💡 Key Takeaway ── 本日の達成</div>
+    <div class="takeaway-cards">
+      <div class="takeaway-card">
+        <div class="num">01 / 構造的修正</div>
+        <div class="title">IndexError を四段で構造的に潰した</div>
+        <div class="detail">daemon リトライ + Mac None ガード + 動的タイムアウト + ソケット再接続。観測パッチが本流を止めない設計に。</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">02 / 実測値の獲得</div>
+        <div class="title">送/着ズレが初めて取れた</div>
+        <div class="detail">[0.02, 1.02, 0.17, -0.35, 0.88, -0.23]。命令通りに動いていることが実測で確認できた。</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">03 / 問題の再定位</div>
+        <div class="title">掴めない理由は制御ではなく運動学</div>
+        <div class="detail">APPROACH→DESCEND の姿勢遷移で爪先が 61.4mm シフト。次のシリーズは二段追従と姿勢拘束。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 01 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">01</span>
+      <span class="section-label">起点 / Log#7 からの宿題</span>
+    </div>
+    <h2 class="section-heading">DESCEND 前後で `[]` が返り IndexError で停止</h2>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">Log#7 持ち越し / 致命エラー</div>
+        <div class="concern-title">把持シーケンス本流まで到達できない</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">発生箇所</div><div class="v">DESCEND 前後</div></div>
+          <div class="concern-stat"><div class="k">症状</div><div class="v">空リスト []</div></div>
+          <div class="concern-stat"><div class="k">後段</div><div class="v">IndexError 停止</div></div>
+        </div>
+        <div class="concern-action">→ 観測パッチが本流を止めない構造に変える</div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">[OBS] DESCEND前 angle: []<br>[ERROR] list index out of range</div>
+      </div>
+      <div class="keyphrase-source">Log#7 末尾<br>実機ログ</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">既知挙動の根本原因</div>
+      <h3 class="widget-heading">pymycobot 由来の偶発的空リスト返却</h3>
+      <div class="cards-3">
+        <div class="card">
+          <div class="card-label">原因 / pymycobot</div>
+          <div class="card-name">get_angles() が稀に [] を返す</div>
+          <div class="card-detail">シリアル通信のバッファタイミングが噛み合わないと発生する既知挙動。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">なぜ Log#6 まで顕在化しなかったか</div>
+          <div class="card-name">旧 SSH 版は別プロセス起動</div>
+          <div class="card-detail">subprocess で毎回フレッシュな状態で呼べていて、偶然この問題を回避していた。</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">Log#7 で顕在化</div>
+          <div class="card-name">デーモン化で永続 MyCobot</div>
+          <div class="card-detail">同一プロセスからの連続コールで、バッファ起因の空リスト返却が露出した。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 02 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">02</span>
+      <span class="section-label">構造的修正 / 4段</span>
+    </div>
+    <h2 class="section-heading">当初は三段、実際は四段 ── レイヤー別に潰す</h2>
+
+    <div class="widget">
+      <div class="widget-label">修正レイヤー (各カードをクリックで展開)</div>
+      <h3 class="widget-heading">観測パッチが本流を止めない設計に</h3>
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">01</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>daemon 側に get_angles リトライ (Pi)</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">DAEMON</span>
+              <span class="tag">100ms 待機</span>
+              <span class="tag">最大3回試行</span>
+              <span class="tag">失敗時は明示エラー</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">02</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>Mac 側 daemon_get_angles を None 返却に統一</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">MAC GUARD</span>
+              <span class="tag">RuntimeError を吸収</span>
+              <span class="tag">None / len!=6 を前提に</span>
+              <span class="tag">差分計算は両方有効時のみ</span>
+              <span class="tag">本流は止めない</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">03</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>動的タイムアウト ── wait + 3.0秒</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">DYNAMIC</span>
+              <span class="tag">cmd_obj.wait 参照</span>
+              <span class="tag">HOME/LIFT: 7.0s</span>
+              <span class="tag">APPROACH/DESCEND: 6.0s</span>
+              <span class="tag">デフォルト: 5.0s</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">04</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>タイムアウト時のソケット強制 close + 再接続</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">SOCKET</span>
+              <span class="tag">_daemon_sock = None</span>
+              <span class="tag">_daemon_buf クリア</span>
+              <span class="tag">バッファ汚染を防ぐ</span>
+              <span class="tag">次回呼び出しで再接続</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">観測失敗は本流を止めない、<br>という原則で書き直す。</div>
+      </div>
+      <div class="keyphrase-source">修正2<br>設計原則</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 03 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">03</span>
+      <span class="section-label">別の壁 / 初期HOMEで timeout</span>
+    </div>
+    <h2 class="section-heading">修正1・2投入後、最初の HOME で死んだ</h2>
+
+    <div class="widget">
+      <div class="widget-label">事実確認 / 推測で動かない</div>
+      <h3 class="widget-heading">daemon_send_angles の wait 値一覧</h3>
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">541</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>関数定義（デフォルト）</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=0</span>
+              <span class="tag">マージン 5.0s 内</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">579</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>send_home() / HOME</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=4</span>
+              <span class="tag">マージン 1.0s ⚠</span>
+              <span class="tag">超過しやすい</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">701</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>動的追従ループ内 send_angles</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=2</span>
+              <span class="tag">マージン 3.0s</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">890</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>refine_mode 内 send_angles</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=0</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">1027</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>APPROACH</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=3</span>
+              <span class="tag">マージン 2.0s</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">1087</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>DESCEND</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=3</span>
+              <span class="tag">マージン 2.0s</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">1127</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>LIFT</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">wait=4</span>
+              <span class="tag">マージン 1.0s ⚠</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">構造的バグ / ソケット汚染</div>
+        <div class="concern-title">_daemon_request に except ブロックが無かった</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">DAEMON_TIMEOUT</div><div class="v">5.0 sec</div></div>
+          <div class="concern-stat"><div class="k">HOME wait</div><div class="v">4 sec</div></div>
+          <div class="concern-stat"><div class="k">マージン</div><div class="v">1.0 sec</div></div>
+        </div>
+        <div class="concern-action">→ シリアルジッタで容易に超過 / 遅延応答が次のコマンドの応答として読まれる</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 04 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">04</span>
+      <span class="section-label">設計判断 / 対症 vs 構造</span>
+    </div>
+    <h2 class="section-heading">DAEMON_TIMEOUT 一律拡大か、動的タイムアウトか</h2>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-header">
+          <span>案 A / 一律拡大</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">手段</span>DAEMON_TIMEOUT_SEC を 10秒など一律で大きくする</li>
+            <li><span class="item-label">短所</span>対症療法。wait=10 のコマンドが追加されれば再発する</li>
+            <li><span class="item-label">本質</span>マージン拡大であって、構造の修正ではない</li>
+          </ul>
+        </div>
+      </div>
+      <div class="compare-col adopted">
+        <div class="compare-col-header">
+          <span>案 B / 動的タイムアウト + ソケット再接続</span>
+          <span class="verdict">採用 ★</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">手段</span>cmd_obj.wait を見て wait + 3.0秒を動的に設定</li>
+            <li><span class="item-label">手段</span>タイムアウト時に sock.close() + _daemon_sock = None</li>
+            <li><span class="item-label">利点</span>新規 wait 値にも自動追従 / バッファ汚染を構造で防ぐ</li>
+            <li><span class="item-label">スコープ</span>socket.timeout のみ対象。他の例外はスコープ外</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <div class="spec-block-header">
+        <span class="stamp">確定動作</span>
+        <span class="title">cmd_obj.wait に応じた timeout 自動設定</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-icon">⏱</div>
+          <div class="spec-key">wait=0 (デフォルト)</div>
+          <div class="spec-value">5.0 sec</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⏱</div>
+          <div class="spec-key">wait=2 (追従)</div>
+          <div class="spec-value">5.0 sec</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⏱</div>
+          <div class="spec-key">wait=3 (APPROACH)</div>
+          <div class="spec-value">6.0 sec</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⏱</div>
+          <div class="spec-key">wait=4 (HOME/LIFT)</div>
+          <div class="spec-value">7.0 sec</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 05 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">05</span>
+      <span class="section-label">追加修正 / set_gripper timeout</span>
+    </div>
+    <h2 class="section-heading">隠れていた事前 sleep 2秒</h2>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">DAY175 由来の遺産</div>
+        <div class="concern-title">daemon 側の set_gripper に事前 sleep が隠れていた</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">事前 sleep</div><div class="v">2.0 sec</div></div>
+          <div class="concern-stat"><div class="k">事後 wait</div><div class="v">2.0 sec</div></div>
+          <div class="concern-stat"><div class="k">動的 timeout</div><div class="v">5.0 sec ✕</div></div>
+        </div>
+        <div class="concern-action">→ 動的タイムアウトは cmd_obj.wait しか見ないので事前 sleep の存在を知らない</div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-header">
+          <span>選択肢 1 / Pi 側を改修</span>
+          <span class="verdict">見送り</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">手段</span>cmd_obj に「事前待機時間」を明示するフィールド追加</li>
+            <li><span class="item-label">難点</span>daemon 側プロトコル変更が伴う</li>
+          </ul>
+        </div>
+      </div>
+      <div class="compare-col adopted">
+        <div class="compare-col-header">
+          <span>選択肢 2 / Mac 側で wait を増やす</span>
+          <span class="verdict">採用 ★</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">手段</span>Mac 側 daemon_set_gripper の wait を引き上げ</li>
+            <li><span class="item-label">利点</span>set_gripper は頻度が低い / 構造変更なし</li>
+            <li><span class="item-label">結果</span>最後まで通った</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 06 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">06</span>
+      <span class="section-label">到達点 / 送/着ズレ実測</span>
+    </div>
+    <h2 class="section-heading">DESCEND が完走し、命令と着地の差が初めて取れた</h2>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">[OBS] 送/着ズレ (post - sent):<br>[0.02, 1.02, 0.17, -0.35, 0.88, -0.23]</div>
+      </div>
+      <div class="keyphrase-source">DESCEND<br>実機ログ</div>
+    </div>
+
+    <div class="value-row cols-6">
+      <div class="value-card">
+        <div class="v-label">j0</div>
+        <div class="v-num">+0.02</div>
+        <div class="v-unit">deg</div>
+      </div>
+      <div class="value-card filled">
+        <div class="v-label">j1</div>
+        <div class="v-num">+1.02</div>
+        <div class="v-unit">deg ★</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">j2</div>
+        <div class="v-num">+0.17</div>
+        <div class="v-unit">deg</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">j3</div>
+        <div class="v-num">-0.35</div>
+        <div class="v-unit">deg</div>
+      </div>
+      <div class="value-card filled">
+        <div class="v-label">j4</div>
+        <div class="v-num">+0.88</div>
+        <div class="v-unit">deg ★</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">j5</div>
+        <div class="v-num">-0.23</div>
+        <div class="v-unit">deg</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">この実測値の意味</div>
+      <h3 class="widget-heading">物理的にほぼ命令通り動いた</h3>
+      <div class="cards-3">
+        <div class="card">
+          <div class="card-label">事実 / j1 + j4</div>
+          <div class="card-name">最大 1.02° の着き不足</div>
+          <div class="card-detail">それ以外の関節は 0.4° 以下。サーボ追従性能の問題ではない範囲。</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Log#5 との対比</div>
+          <div class="card-name">命令が滞留していた過去の症状</div>
+          <div class="card-detail">SSH 経由で Pi 側に溜まっていた状態は Log#7 デーモン化で解消済み。</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">今後の基準</div>
+          <div class="card-name">姿勢別の mm/deg 換算が宿題</div>
+          <div class="card-detail">1°前後の着き不足が爪先の世界座標で何 mm になるか。次シリーズの実測課題。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 07 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">07</span>
+      <span class="section-label">壁 / それでも掴めない</span>
+    </div>
+    <h2 class="section-heading">DESCEND 後の最初のフレームで TIP_X が 61.4mm シフト</h2>
+
+    <div class="value-row">
+      <div class="value-card">
+        <div class="v-label">APPROACH 収束時</div>
+        <div class="v-num">+213.5</div>
+        <div class="v-unit">mm (tip_x = red_x)</div>
+        <div class="v-tag">ALIGNED</div>
+      </div>
+      <div class="value-card filled">
+        <div class="v-label">DESCEND 後 最初の観測</div>
+        <div class="v-num">+152.1</div>
+        <div class="v-unit">mm (tip_x)</div>
+        <div class="v-tag">SHIFTED</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">シフト量</div>
+        <div class="v-num">−61.4</div>
+        <div class="v-unit">mm / 1 フレーム</div>
+        <div class="v-tag">DIFF_X</div>
+      </div>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">refine_mode の振る舞い</div>
+        <div class="concern-title">Z 制御が離れる方向に動いている</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">t=0.0s diff_z</div><div class="v">+60.0mm</div></div>
+          <div class="concern-stat"><div class="k">t=1.8s diff_z</div><div class="v">+71.5mm</div></div>
+          <div class="concern-stat"><div class="k">t=3.7s diff_z</div><div class="v">+80.4mm</div></div>
+        </div>
+        <div class="concern-action">→ DESCEND 後の姿勢領域では j1+j2+j4 連動の符号が再び逆の可能性 / 仮説段階・実測必須</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 08 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">08</span>
+      <span class="section-label">構造 / 制御ではなく運動学</span>
+    </div>
+    <h2 class="section-heading">APPROACH と DESCEND は別の姿勢領域だった</h2>
+
+    <div class="before-after">
+      <div class="ba-col before">
+        <div class="ba-stamp">APPROACH 姿勢</div>
+        <div class="ba-icon-row">⌐ TIP</div>
+        <div class="ba-name">収束時の姿勢 (Unity 投影で TIP=ブロック)</div>
+        <div class="ba-axes">
+          <div class="ba-axis"><span class="axis-name">j1</span><span class="axis-status">+76.10°</span></div>
+          <div class="ba-axis"><span class="axis-name">j2</span><span class="axis-status">−31.64°</span></div>
+          <div class="ba-axis"><span class="axis-name">TIP_X</span><span class="axis-status">+213.5mm</span></div>
+          <div class="ba-axis"><span class="axis-name">diff_x</span><span class="axis-status">±0.0mm ◎</span></div>
+        </div>
+      </div>
+      <div class="ba-arrow">→</div>
+      <div class="ba-col after">
+        <div class="ba-stamp">DESCEND 後</div>
+        <div class="ba-icon-row">⌐ TIP'</div>
+        <div class="ba-name">爪を下ろした後の別姿勢</div>
+        <div class="ba-axes">
+          <div class="ba-axis"><span class="axis-name">j1</span><span class="axis-status">+87.74°</span></div>
+          <div class="ba-axis"><span class="axis-name">j2</span><span class="axis-status">−5.00°</span></div>
+          <div class="ba-axis"><span class="axis-name">TIP_X</span><span class="axis-status">+152.1mm</span></div>
+          <div class="ba-axis"><span class="axis-name">diff_x</span><span class="axis-status">+61.4mm ✕</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kinem-illust-wrap">
+      <svg class="kinem-illust" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- ground -->
+        <line class="illust-line" x1="60" y1="240" x2="620" y2="240"/>
+        <text class="illust-text" x="60" y="258">MAT (z=0)</text>
+
+        <!-- arm base -->
+        <rect class="illust-base" x="320" y="225" width="40" height="15"/>
+        <text class="illust-text" x="340" y="222" text-anchor="middle">BASE</text>
+
+        <!-- block -->
+        <rect class="illust-fill" x="210" y="225" width="18" height="15"/>
+        <text class="illust-dim-text" x="219" y="218" text-anchor="middle">★</text>
+        <text class="illust-text" x="219" y="270" text-anchor="middle">red block</text>
+        <text class="illust-text label" x="219" y="282" text-anchor="middle">x = +213.5</text>
+
+        <!-- APPROACH posture (arm bent) -->
+        <line class="illust-line-bold" x1="340" y1="225" x2="280" y2="120"/>
+        <line class="illust-line-bold" x1="280" y1="120" x2="219" y2="180"/>
+        <line class="illust-line-bold" x1="219" y1="180" x2="219" y2="218"/>
+        <circle class="illust-fill" cx="219" cy="218" r="4"/>
+        <text class="illust-text label" x="195" y="115">APPROACH</text>
+        <text class="illust-text" x="195" y="128">j1=+76° j2=−32°</text>
+        <text class="illust-text label" x="195" y="200">TIP_X=+213.5</text>
+
+        <!-- DESCEND posture (arm extended) -->
+        <line class="illust-line" x1="340" y1="225" x2="365" y2="100" stroke-dasharray="0"/>
+        <line class="illust-line" x1="365" y1="100" x2="395" y2="195" stroke-dasharray="0"/>
+        <line class="illust-line-bold" x1="395" y1="195" x2="395" y2="235"/>
+        <circle class="illust-fill" cx="395" cy="235" r="4"/>
+        <text class="illust-text label" x="408" y="100">DESCEND</text>
+        <text class="illust-text" x="408" y="113">j1=+87° j2=−5°</text>
+        <text class="illust-text label" x="408" y="220">TIP_X=+152.1</text>
+
+        <!-- shift arrow -->
+        <path class="illust-blind" d="M 219 245 L 395 245"/>
+        <text class="illust-dim-text" x="307" y="262" text-anchor="middle">SHIFT 61.4mm →</text>
+
+        <!-- header notes -->
+        <text class="illust-text" x="60" y="20">SIDE VIEW (姿勢遷移の幾何)</text>
+        <text class="illust-text" x="60" y="34">同じ命令の関節角でも、姿勢が違えば爪先の世界座標は別になる</text>
+      </svg>
+    </div>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">これは制御の問題ではない。<br>運動学側の構造的なギャップだ。</div>
+      </div>
+      <div class="keyphrase-source">本文より<br>原因の再定位</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SECTION 09 -->
+  <!-- ════════════════════════════════════════ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">09</span>
+      <span class="section-label">次の設計 / 二段追従</span>
+    </div>
+    <h2 class="section-heading">姿勢拘束付きの第二追従レイヤーを設計する</h2>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">アプローチPICK姿勢から真下に下がった後も、<br>TIP とブロックの位置調整が必要。<br>その時にグリッパーが上に向かない姿勢制御が必要。</div>
+      </div>
+      <div class="keyphrase-source">現場の指摘<br>次シリーズの種</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">制御レイヤーの分離</div>
+      <h3 class="widget-heading">2段階に分けた追従設計</h3>
+      <div class="cards-2">
+        <div class="card">
+          <div class="card-label">段階 1 / 既存</div>
+          <div class="card-name">APPROACH 段階の追従</div>
+          <div class="card-detail">上空でブロックの上に爪を持っていく。Log#7 で収束を達成済み。</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">段階 2 / 新規 ★</div>
+          <div class="card-name">DESCEND 後の追従</div>
+          <div class="card-detail">降下後、グリッパー向きを下に保ったまま、もう一度 (x, z) を合わせる。自由度に拘束あり。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <div class="spec-block-header">
+        <span class="stamp">次シリーズの宿題</span>
+        <span class="title">DESCEND 後姿勢領域での設計</span>
+      </div>
+      <div class="spec-grid cols-3">
+        <div class="spec-item">
+          <div class="spec-icon">◎</div>
+          <div class="spec-key">実測キャリブレーション</div>
+          <div class="spec-value">j1≈+87.74 / j2≈−5.0 での Z 符号 + mm/deg</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⊥</div>
+          <div class="spec-key">姿勢拘束付き運動学</div>
+          <div class="spec-value">グリッパー下向きを保つ (x, z) 解</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⟷</div>
+          <div class="spec-key">レイヤー分離</div>
+          <div class="spec-value">APPROACH 追従と DESCEND 後追従を別実装</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">仮説を立てる前に、<br>まず測れる手段を持つこと (P008)。</div>
+      </div>
+      <div class="keyphrase-source">設計原則<br>Log#5 からの教訓</div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div class="closing-block">
+    <div class="closing-label">本日の結論 ── 動きの質の壁から、形の質の壁へ</div>
+    <div class="closing-grid">
+      <div class="closing-side before">
+        <div class="when">BEFORE / Log#7 まで</div>
+        <div class="world">「動的追従が収束した日」<br>動きの質が変わった世界</div>
+        <div class="seen">
+          <div class="seen-item"><span>2D 距離収束</span><span>◎</span></div>
+          <div class="seen-item"><span>DESCEND 完走</span><span>✕</span></div>
+          <div class="seen-item"><span>送/着ズレ実測</span><span>✕</span></div>
+          <div class="seen-item"><span>掴むまで</span><span>✕</span></div>
+        </div>
+      </div>
+      <div class="closing-arrow">→</div>
+      <div class="closing-side after">
+        <div class="when">AFTER / Log#8 で</div>
+        <div class="world">「形の質の壁」を初めて見た<br>運動学が問われる世界</div>
+        <div class="seen">
+          <div class="seen-item"><span>2D 距離 2.8mm 到達</span><span>◎</span></div>
+          <div class="seen-item"><span>DESCEND 完走</span><span>◎</span></div>
+          <div class="seen-item"><span>送/着ズレ実測</span><span>◎</span></div>
+          <div class="seen-item"><span>掴むまで</span><span>次シリーズ</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div>© ADAPT DESIGN / Pixels to Motors</div>
+    <div>UX × AI × ROBOTICS</div>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.widget').forEach(widget => {
+    const pillars = widget.querySelectorAll('.pillar');
+    if (pillars.length === 0) return;
+    const panels = widget.querySelectorAll('.panel');
+    const emptyPanel = widget.querySelector('.panel-empty');
+    const sceneGroups = widget.querySelectorAll('.scene-group');
+
+    pillars.forEach(p => {
+      p.addEventListener('click', () => {
+        const axis = p.dataset.axis;
+        pillars.forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        panels.forEach(panel => panel.classList.remove('active'));
+        const target = widget.querySelector(`.panel[data-axis="${axis}"]`);
+        if (target) target.classList.add('active');
+        if (emptyPanel) emptyPanel.style.display = 'none';
+        sceneGroups.forEach(g => {
+          g.classList.toggle('active', g.dataset.axis === axis);
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('.flow-step').forEach(step => {
+    step.addEventListener('click', () => step.classList.toggle('active'));
+  });
+</script>
+
+</body>
+</html>
