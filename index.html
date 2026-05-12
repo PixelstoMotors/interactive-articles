@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DAY 193 ── 記事をビジュアルウィジェットで作り直す日 | Pixels to Motors</title>
+<title>Interactive Articles | Pixels to Motors</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,9 +24,9 @@ body {
   font-feature-settings: "palt" 1;
   -webkit-font-smoothing: antialiased;
 }
-.article-root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+.root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
 
-/* Topbar */
+/* === Topbar === */
 .topbar {
   position: sticky; top: 0; z-index: 50;
   background: var(--white);
@@ -45,13 +45,35 @@ body {
   background: var(--black); border-radius: 50%;
   margin-right: 8px; transform: translateY(-1px);
 }
-.topbar .day-tag { border: 1px solid var(--black); padding: 4px 10px; font-weight: 700; }
+.topbar .back-link {
+  border: 1px solid var(--black);
+  padding: 4px 10px;
+  font-weight: 700;
+}
 
-/* Hero */
-.hero { padding: 48px 0 32px; border-bottom: 1.5px solid var(--black); margin-bottom: 48px; }
+/* === Hero === */
+.hero {
+  padding: 56px 0 48px;
+  border-bottom: 1.5px solid var(--black);
+  margin-bottom: 56px;
+}
+.hero-pretitle {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(20px, 3.4vw, 30px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+  color: var(--black);
+  margin-bottom: 28px;
+}
+.hero-pretitle .pretitle-sep {
+  display: inline-block;
+  margin: 0 8px;
+  opacity: 0.4;
+}
 .hero-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
+  font-size: 10px; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--gray-dark);
   margin-bottom: 16px;
   display: flex; gap: 16px; flex-wrap: wrap;
@@ -63,1505 +85,318 @@ body {
 }
 .hero h1 {
   font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(24px, 4vw, 36px);
-  font-weight: 700; line-height: 1.25;
-  letter-spacing: -0.01em; margin-bottom: 32px;
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 700; line-height: 1.05;
+  letter-spacing: -0.025em; margin-bottom: 20px;
+}
+.hero-desc {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; line-height: 1.7;
+  color: var(--gray-dark);
+  max-width: 720px;
 }
 
-.hero-transition {
-  border: 1.5px solid var(--black);
-  display: grid;
-  grid-template-columns: 1fr 60px 1fr;
-  align-items: stretch;
-}
-.hero-trans-col { padding: 22px 22px; }
-.hero-trans-col.from { background: var(--white); }
-.hero-trans-col.to { background: var(--black); color: var(--white); }
-.hero-trans-arrow {
-  display: flex; align-items: center; justify-content: center;
-  font-family: "IBM Plex Mono", monospace; font-size: 24px;
-  border-left: 1.5px solid var(--black);
-  border-right: 1.5px solid var(--black);
-}
-.hero-trans-col .step {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
-  margin-bottom: 8px; opacity: 0.7;
-}
-.hero-trans-col .label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 15px; font-weight: 700; margin-bottom: 12px;
-}
-.hero-trans-col .icons {
-  display: flex; gap: 8px; flex-wrap: wrap;
-}
-.hero-trans-col .icon-pill {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
-  padding: 4px 8px;
-  border: 1px solid currentColor;
-  letter-spacing: 0.05em;
-}
-
-/* Takeaway */
-.takeaway {
-  background: var(--black); color: var(--white);
-  padding: 28px 28px; margin-bottom: 64px;
-  border: 1.5px solid var(--black);
-}
-.takeaway-label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--gray-light);
-  margin-bottom: 16px; opacity: 0.7;
-}
-.takeaway-cards {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-}
-.takeaway-card { border: 1px solid var(--white); padding: 16px; }
-.takeaway-card .num {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
-  opacity: 0.6; margin-bottom: 8px;
-}
-.takeaway-card .title {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 14px; font-weight: 700;
-  margin-bottom: 8px; line-height: 1.45;
-}
-.takeaway-card .detail { font-size: 11.5px; line-height: 1.6; opacity: 0.85; }
-
-/* Section */
-.article-section { margin-bottom: 80px; }
+/* === Section Label === */
 .section-marker {
   display: flex; align-items: baseline; gap: 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--black);
+  margin-bottom: 24px;
   padding-bottom: 12px;
-}
-.section-num {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 13px; font-weight: 700;
-  letter-spacing: 0.08em; color: var(--gray-dark);
+  border-bottom: 1px solid var(--black);
 }
 .section-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
+  font-size: 11px; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--gray-dark);
+  font-weight: 700;
 }
-.section-heading {
+.section-count {
   font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(18px, 2.6vw, 22px);
-  font-weight: 700; line-height: 1.4;
-  margin-bottom: 28px; letter-spacing: 0.01em;
+  font-size: 11px; opacity: 0.5;
 }
 
-/* Widget */
-.widget {
+/* === Articles Grid === */
+.articles-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.article-card {
+  display: block;
   border: 1.5px solid var(--black);
-  padding: 22px 20px;
+  padding: 26px 28px;
+  text-decoration: none;
+  color: var(--black);
   background: var(--white);
-  margin: 20px 0;
-}
-.widget-label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--gray-dark);
-  margin-bottom: 6px;
-}
-.widget-heading {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 14px; font-weight: 600;
-  margin-bottom: 18px; letter-spacing: 0.02em; line-height: 1.4;
-}
-
-/* Cards */
-.cards-2, .cards-3, .cards-4 { display: grid; gap: 10px; }
-.cards-2 { grid-template-columns: repeat(2, 1fr); }
-.cards-3 { grid-template-columns: repeat(3, 1fr); }
-.cards-4 { grid-template-columns: repeat(4, 1fr); }
-.card { border: 1px solid var(--black); padding: 12px; }
-.card.filled { background: var(--black); color: var(--white); }
-.card-label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px; opacity: 0.7;
-}
-.card-name { font-size: 13px; font-weight: 600; line-height: 1.45; margin-bottom: 4px; }
-.card-detail { font-size: 11.5px; line-height: 1.55; opacity: 0.85; }
-
-/* Value */
-.value-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-.value-card {
-  border: 1.5px solid var(--black);
-  padding: 18px 16px;
-  text-align: center;
+  transition: background 0.18s ease, color 0.18s ease;
   position: relative;
 }
-.value-card.struck { background: var(--gray-light); opacity: 0.85; }
-.value-card .v-label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; opacity: 0.7;
-  margin-bottom: 8px;
-}
-.value-card .v-num {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 28px; font-weight: 700;
-  line-height: 1; margin-bottom: 4px;
-}
-.value-card.struck .v-num { text-decoration: line-through; text-decoration-thickness: 2px; }
-.value-card .v-unit {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; opacity: 0.7;
-  margin-bottom: 8px;
-}
-.value-card .v-tag {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px; letter-spacing: 0.1em;
-  padding: 3px 8px;
-  border: 1px solid var(--black);
-  display: inline-block;
-  font-weight: 700;
-}
-.value-card.struck .v-tag { background: var(--black); color: var(--white); }
-
-/* Keyphrase */
-.keyphrase-block {
-  border: 1.5px solid var(--black);
-  margin: 20px 0;
-  display: grid;
-  grid-template-columns: 60px 1fr 100px;
-  align-items: stretch;
-}
-.keyphrase-block.dark { background: var(--black); color: var(--white); }
-.keyphrase-mark {
-  background: var(--black); color: var(--white);
-  display: flex; align-items: center; justify-content: center;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 32px; font-weight: 700;
-}
-.keyphrase-block.dark .keyphrase-mark { background: var(--white); color: var(--black); }
-.keyphrase-body {
-  padding: 20px 22px;
-  display: flex; align-items: center;
-}
-.keyphrase-text {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(15px, 2vw, 19px);
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-}
-.keyphrase-source {
-  display: flex; align-items: center; justify-content: center;
-  padding: 8px;
-  border-left: 1.5px solid var(--black);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.4;
-}
-.keyphrase-block.dark .keyphrase-source { border-left-color: var(--white); }
-
-/* Spec */
-.spec-block {
-  background: var(--black); color: var(--white);
-  border: 1.5px solid var(--black);
-  margin: 20px 0;
-}
-.spec-block-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(245, 245, 240, 0.2);
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 12px;
-}
-.spec-block-header .stamp {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
-  opacity: 0.6; text-transform: uppercase;
-}
-.spec-block-header .title {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 15px; font-weight: 700;
-}
-.spec-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-}
-.spec-item {
-  padding: 18px 14px;
-  text-align: center;
-  border-right: 1px solid rgba(245, 245, 240, 0.2);
-}
-.spec-item:last-child { border-right: none; }
-.spec-icon {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 22px; font-weight: 700;
-  margin-bottom: 10px; line-height: 1;
-}
-.spec-key {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; opacity: 0.6;
-  margin-bottom: 6px;
-}
-.spec-value {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 13px; font-weight: 700; line-height: 1.3;
-}
-
-/* Concern */
-.concern-card {
-  border: 2px dashed var(--black);
-  margin: 20px 0;
-  display: grid;
-  grid-template-columns: 80px 1fr;
-}
-.concern-icon-wrap {
-  display: flex; align-items: center; justify-content: center;
-  border-right: 2px dashed var(--black);
-}
-.concern-icon {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 36px; font-weight: 700;
-}
-.concern-body { padding: 16px 18px; }
-.concern-label {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--gray-dark);
-  margin-bottom: 4px;
-}
-.concern-title {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 16px; font-weight: 700;
-  margin-bottom: 12px;
-}
-.concern-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.concern-stat {
-  border: 1px solid var(--black);
-  padding: 8px 10px;
-  text-align: center;
-}
-.concern-stat .k {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 8.5px; letter-spacing: 0.08em;
-  text-transform: uppercase; opacity: 0.7;
-  margin-bottom: 4px;
-}
-.concern-stat .v {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 13px; font-weight: 700;
-}
-.concern-action {
-  margin-top: 10px;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
-  padding: 6px 10px;
+.article-card:hover {
   background: var(--black);
   color: var(--white);
-  display: inline-block;
+}
+.article-card:hover .card-cta-arrow {
+  transform: translateX(4px);
 }
 
-/* Before/After */
-.before-after {
-  border: 1.5px solid var(--black);
-  margin: 20px 0;
-  display: grid;
-  grid-template-columns: 1fr 60px 1fr;
-}
-.ba-col { padding: 22px 18px; }
-.ba-col.before { background: var(--white); }
-.ba-col.after { background: var(--black); color: var(--white); }
-.ba-arrow {
-  display: flex; align-items: center; justify-content: center;
-  font-family: "IBM Plex Mono", monospace; font-size: 26px;
-  border-left: 1.5px solid var(--black);
-  border-right: 1.5px solid var(--black);
-}
-.ba-stamp {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px; letter-spacing: 0.16em;
-  margin-bottom: 14px; opacity: 0.6;
-}
-.ba-icon-row {
-  display: flex; gap: 8px; align-items: center;
+.card-meta {
+  display: flex; flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
   margin-bottom: 16px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 26px; font-weight: 700;
-  line-height: 1;
-}
-.ba-name {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 14px; font-weight: 700;
-  margin-bottom: 12px;
-}
-.ba-axes { display: flex; flex-direction: column; gap: 6px; }
-.ba-axis {
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
-  padding: 6px 10px;
-  border: 1px solid currentColor;
-}
-.ba-axis .axis-name { font-weight: 700; }
-.ba-axis .axis-status { opacity: 0.8; }
-
-/* Tag set */
-.tag-set {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  margin-top: 12px;
-}
-.tag-set .tag {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
-  padding: 4px 8px;
-  border: 1px solid currentColor;
-  letter-spacing: 0.04em;
-}
-.tag-set .tag.solid { background: currentColor; }
-.tag-set .tag.solid span { color: var(--white); }
-.panel-body .tag-set .tag.solid span { color: var(--white); }
-
-/* Pillars */
-.pillars { display: grid; gap: 8px; margin-bottom: 16px; }
-.pillars[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
-.pillars[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
-.pillars[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
-.pillar {
-  border: 1.5px solid var(--black);
-  background: var(--white); color: var(--black);
-  padding: 14px 8px; cursor: pointer; text-align: center;
-  transition: background 0.18s, color 0.18s;
-  font-family: "IBM Plex Mono", monospace;
-}
-.pillar:hover { background: var(--gray-light); }
-.pillar.active { background: var(--black); color: var(--white); }
-.pillar-axis { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-.pillar-name { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
-
-.panel-empty {
-  border: 1px dashed var(--gray-mid);
-  padding: 20px 16px; text-align: center;
-  color: var(--gray-mid); font-size: 11.5px;
-  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
   letter-spacing: 0.08em;
 }
-.panel-empty .arrow {
-  display: block; font-size: 18px; margin-bottom: 6px;
-  animation: bounce 1.2s ease-in-out infinite;
+.card-day {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-.panel { display: none; border: 1.5px solid var(--black); animation: slideIn 0.28s ease-out; }
-.panel.active { display: block; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.panel-header {
-  background: var(--black); color: var(--white);
-  padding: 12px 16px;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: flex; justify-content: space-between;
-  align-items: center; gap: 12px;
-}
-.panel-header .verdict { font-weight: 700; }
-.panel-body { padding: 16px; }
-
-/* Compare */
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.compare-col { border: 1.5px solid var(--black); }
-.compare-col.adopted { background: var(--black); color: var(--white); }
-.compare-col-header {
-  padding: 12px 16px;
-  border-bottom: 1.5px solid var(--black);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: flex; justify-content: space-between;
-  align-items: center; gap: 8px;
-}
-.compare-col.adopted .compare-col-header { border-bottom-color: var(--white); }
-.compare-col-header .verdict { font-weight: 700; }
-.compare-col-body { padding: 14px 16px; }
-.compare-list { list-style: none; padding: 0; margin: 0; }
-.compare-list li {
-  font-size: 12.5px; line-height: 1.5;
-  padding: 8px 0 8px 16px;
-  position: relative;
-  border-bottom: 1px solid var(--gray-light);
-}
-.compare-col.adopted .compare-list li { border-bottom-color: rgba(245, 245, 240, 0.15); }
-.compare-list li:last-child { border-bottom: none; }
-.compare-list li::before { content: "—"; position: absolute; left: 0; opacity: 0.6; }
-.compare-list .item-label {
-  display: block;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; opacity: 0.6;
-  margin-bottom: 2px;
-}
-
-/* Flow */
-.flow-steps { list-style: none; padding: 0; margin: 0; }
-.flow-step {
-  border: 1.5px solid var(--black);
-  margin-bottom: 10px; background: var(--white);
-  display: grid; grid-template-columns: 56px 1fr;
-  align-items: stretch; cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  position: relative;
-}
-.flow-step:hover { background: var(--gray-light); }
-.flow-step.active { background: var(--black); color: var(--white); }
-.flow-step:last-child { margin-bottom: 0; }
-.flow-step:not(:last-child)::after {
-  content: ""; position: absolute;
-  left: 28px; bottom: -10px;
-  width: 1.5px; height: 10px;
-  background: var(--black);
-}
-.flow-step-num {
-  background: var(--black); color: var(--white);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 15px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-}
-.flow-step.active .flow-step-num { background: var(--white); color: var(--black); }
-.flow-step-body { padding: 10px 14px; }
-.flow-step-title {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 12.5px; font-weight: 600; line-height: 1.4;
-  display: flex; justify-content: space-between;
-  align-items: center; gap: 8px;
-}
-.flow-step-title .toggle-mark { font-size: 11px; opacity: 0.5; transition: transform 0.2s; }
-.flow-step.active .flow-step-title .toggle-mark { transform: rotate(45deg); opacity: 1; }
-.flow-step-tags {
-  display: none;
-  flex-wrap: wrap; gap: 5px;
-  padding-top: 8px; margin-top: 8px;
-  border-top: 1px solid var(--gray-light);
-}
-.flow-step.active .flow-step-tags {
-  display: flex; animation: slideIn 0.2s ease-out;
-  border-top-color: rgba(245, 245, 240, 0.2);
-}
-.flow-step-tags .tag {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9.5px; letter-spacing: 0.04em;
-  padding: 3px 7px;
+.card-tag {
+  padding: 3px 9px;
   border: 1px solid currentColor;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   opacity: 0.85;
 }
-.flow-step-tags .tag.tag-key { font-weight: 700; opacity: 1; }
+.card-date {
+  opacity: 0.6;
+  font-size: 10.5px;
+}
 
-/* Closing */
-.closing-block {
-  margin: 64px 0 32px;
-  border: 1.5px solid var(--black);
-}
-.closing-label {
-  background: var(--black); color: var(--white);
-  padding: 14px 24px;
+.card-series {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; letter-spacing: 0.16em;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  opacity: 0.65;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.card-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 22px;
+  letter-spacing: 0.005em;
+}
+
+.card-cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-align: center;
+  padding-top: 18px;
+  border-top: 1px solid currentColor;
+  opacity: 0.85;
 }
-.closing-grid {
+.article-card:hover .card-cta { opacity: 1; }
+.card-cta-arrow {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+/* === Tags inline (for chapter-like info) === */
+.card-chapter {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+/* === About === */
+.about {
+  margin-top: 64px;
+  padding-top: 8px;
+}
+.about-grid {
   display: grid;
-  grid-template-columns: 1fr 80px 1fr;
+  grid-template-columns: 1fr 280px;
+  gap: 40px;
+  padding: 8px 0;
 }
-.closing-side { padding: 32px 28px; }
-.closing-side.before { background: var(--white); }
-.closing-side.after { background: var(--black); color: var(--white); }
-.closing-arrow {
-  display: flex; align-items: center; justify-content: center;
-  font-family: "IBM Plex Mono", monospace; font-size: 32px;
-  border-left: 1.5px solid var(--black);
-  border-right: 1.5px solid var(--black);
-}
-.closing-side .when {
+.about-text {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; letter-spacing: 0.16em;
-  margin-bottom: 12px; opacity: 0.6;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--gray-dark);
 }
-.closing-side .world {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(18px, 2.8vw, 24px);
-  font-weight: 700; line-height: 1.35;
-  margin-bottom: 16px;
+.about-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 1px solid var(--gray-light);
+  padding-left: 24px;
 }
-.closing-side .seen {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.closing-side .seen-item {
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 11.5px;
-  padding: 5px 10px;
-  border: 1px solid currentColor;
-  display: flex; justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--gray-light);
 }
+.meta-row:last-child { border-bottom: none; }
+.meta-key {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.meta-val { font-weight: 700; }
 
-/* Footer */
+/* === Footer === */
 .footer {
+  margin-top: 80px;
+  padding-top: 32px;
   border-top: 1.5px solid var(--black);
-  padding: 32px 0 0;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px; letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--gray-dark);
-  display: flex; justify-content: space-between;
-  align-items: center; flex-wrap: wrap; gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
+.footer a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.footer a:hover { opacity: 0.55; }
 
 ::selection { background: var(--black); color: var(--white); }
 
-@media (max-width: 720px) {
-  .article-root { padding: 0 16px 60px; }
+/* === Mobile === */
+@media (max-width: 640px) {
+  .root { padding: 0 16px 60px; }
   .topbar { margin: 0 -16px; padding: 12px 16px; font-size: 10px; }
-  .hero { padding: 36px 0 24px; }
-  .hero-transition { grid-template-columns: 1fr; }
-  .hero-trans-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
-  .takeaway { padding: 24px 20px; }
-  .takeaway-cards { grid-template-columns: 1fr; }
-  .widget { padding: 18px 14px; }
-  .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
-  .value-row { grid-template-columns: 1fr; }
-  .pillars[data-count="3"], .pillars[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
-  .compare-grid { grid-template-columns: 1fr; }
-  .spec-grid { grid-template-columns: repeat(2, 1fr); }
-  .spec-item:nth-child(2) { border-right: none; }
-  .spec-item:nth-child(1), .spec-item:nth-child(2) { border-bottom: 1px solid rgba(245, 245, 240, 0.2); }
-  .panel-header, .compare-col-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .keyphrase-block { grid-template-columns: 48px 1fr; }
-  .keyphrase-source { display: none; }
-  .keyphrase-mark { font-size: 22px; }
-  .concern-card { grid-template-columns: 60px 1fr; }
-  .concern-stats { grid-template-columns: 1fr; }
-  .before-after, .closing-grid { grid-template-columns: 1fr; }
-  .ba-arrow, .closing-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
-  .article-section { margin-bottom: 60px; }
+  .hero { padding: 40px 0 32px; }
+  .hero-pretitle { margin-bottom: 22px; }
+  .article-card { padding: 20px 18px; }
+  .card-meta { gap: 10px; }
+  .card-cta { font-size: 10px; }
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .about-meta {
+    border-left: none;
+    border-top: 1px solid var(--gray-light);
+    padding-left: 0;
+    padding-top: 16px;
+  }
 }
-</style></head>
+</style>
+</head>
 <body>
 
-<div class="article-root">
+<div class="root">
 
-  <!-- TOPBAR -->
   <header class="topbar">
-    <a class="brand" href="https://pixelstomotors.github.io/interactive-articles/" target="_blank" rel="noopener noreferrer"><span class="brand-dot"></span>Pixels to Motors</a>
-    <a class="day-tag" href="https://adaptdesign.jp/pixelstomotors/record/visual-article-builder" target="_blank" rel="noopener noreferrer">DAY 193</a>
+    <a class="brand" href="https://adaptdesign.jp/pixelstomotors" target="_blank" rel="noopener noreferrer">
+      <span class="brand-dot"></span>Pixels to Motors
+    </a>
+    <a class="back-link" href="https://adaptdesign.jp/pixelstomotors" target="_blank" rel="noopener noreferrer">
+      ← 通常記事一覧
+    </a>
   </header>
 
-  <!-- HERO -->
   <section class="hero">
+    <div class="hero-pretitle">Pixels to Motors ── デジタルツインが生み出す次世代ロボティクスUX</div>
     <div class="hero-label">
-      <span>公開基盤構築</span>
-      <span>Build-in-public</span>
-      <span>二層公開システム</span>
+      <span>Interactive Edition</span>
+      <span>全要素図解版</span>
     </div>
-    <h1>記事をビジュアルウィジェットで作り直す日 ── STUDIO と GitHub Pages の二層公開システムを建てた</h1>
-
-    <div class="hero-transition">
-      <div class="hero-trans-col from">
-        <div class="step">FROM / 開始時</div>
-        <div class="label">「md を HTML にしたい」</div>
-        <div class="icons">
-          <span class="icon-pill">md → HTML</span>
-          <span class="icon-pill">テンプレ量産</span>
-          <span class="icon-pill">散文 + 部分図解</span>
-        </div>
-      </div>
-      <div class="hero-trans-arrow">→</div>
-      <div class="hero-trans-col to">
-        <div class="step">TO / 到達点</div>
-        <div class="label">二層公開システムの完成</div>
-        <div class="icons">
-          <span class="icon-pill">全要素図解化</span>
-          <span class="icon-pill">STUDIO + GH Pages</span>
-          <span class="icon-pill">3操作で公開</span>
-        </div>
-      </div>
-    </div>
+    <h1>Interactive Articles</h1>
+    <p class="hero-desc">
+      記事の判断・設計・データを、タブ切替・SVG・インタラクションで読む。<br>
+      タップして展開、比較して把握、視点を切り替えて理解する形式の公開アーカイブ。
+    </p>
   </section>
 
-  <!-- TAKEAWAY -->
-  <section class="takeaway">
-    <div class="takeaway-label">💡 Key Takeaway ── 本日の達成</div>
-    <div class="takeaway-cards">
-      <div class="takeaway-card">
-        <div class="num">01 / 視覚化原則</div>
-        <div class="title">全テキスト段落を廃止</div>
-        <div class="detail">18の視覚コンポーネントで構成。散文ゼロ、「読む」から「触る」への体験転換を設計</div>
-      </div>
-      <div class="takeaway-card">
-        <div class="num">02 / 公開基盤</div>
-        <div class="title">STUDIO + GitHub Pages 二層</div>
-        <div class="detail">役割の違う2層がバナーとロゴで相互リンク。同じ情報を別体験として2回提供</div>
-      </div>
-      <div class="takeaway-card">
-        <div class="num">03 / 運用設計</div>
-        <div class="title">記事追加は3操作で完結</div>
-        <div class="detail">Claude Project で自動生成、articles.json で動的描画。index.html は触らない</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 01 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
+  <section>
     <div class="section-marker">
-      <span class="section-num">01</span>
-      <span class="section-label">起点</span>
+      <span class="section-label">Record / 記録</span>
+      <span class="section-count">01 / 全1件</span>
     </div>
-    <h2 class="section-heading">「mdをHTML化したい」── 意図と提案のすれ違い</h2>
 
-    <div class="compare-grid">
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span>提案 / 最初の回答</span>
-          <span class="verdict">廃案</span>
+    <div class="articles-grid">
+
+      <!-- ════ DAY 192 ════ -->
+      <a class="article-card" href="./setting-up-the-side-camera/">
+        <div class="card-meta">
+          <span class="card-day">DAY 192</span>
+          <span class="card-tag">デジタルツイン学習</span>
+          <span class="card-date">2026 / 05 / 07</span>
         </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">ツール構成</span>markdown-it + highlight.js + 自前CSS</li>
-            <li><span class="item-label">変換系統</span>node convert.js で md → 綺麗な HTML ページ</li>
-            <li><span class="item-label">想定する出力</span>h2 から自動目次、Key Takeaway をコールアウト</li>
-            <li><span class="item-label">評価</span>技術的には正しい、意図とズレていた</li>
-          </ul>
+        <div class="card-series">mechArm 270 Pi 動的追従の限界を探る ── Log #10</div>
+        <h2 class="card-title">視点を増やす日 ── 設計判断と iPhone 2台体制の物理構築</h2>
+        <div class="card-cta">
+          <span>Open Interactive</span>
+          <span class="card-cta-arrow">→</span>
         </div>
-      </div>
-      <div class="compare-col adopted">
-        <div class="compare-col-header">
-          <span>意図 / 本当に欲しかったもの</span>
-          <span class="verdict">本筋 ★</span>
+      </a>
+
+      <!-- 次の記事を追加する場合のテンプレ -->
+      <!--
+      <a class="article-card" href="./{slug}/">
+        <div class="card-meta">
+          <span class="card-day">DAY ###</span>
+          <span class="card-tag">カテゴリ</span>
+          <span class="card-date">YYYY / MM / DD</span>
         </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">基準点</span>DAY192_two_cameras_role.html(既存の埋込ウィジェット)</li>
-            <li><span class="item-label">拡張方向</span>記事1本まるごとを同じフォーマットで作る</li>
-            <li><span class="item-label">想定する出力</span>記事内容に合わせて図解を生成する自動化</li>
-            <li><span class="item-label">気づき</span>1往復で食い違いを発見、方針転換</li>
-          </ul>
+        <div class="card-series">シリーズタイトル ── Log #N</div>
+        <h2 class="card-title">記事タイトル</h2>
+        <div class="card-cta">
+          <span>Open Interactive</span>
+          <span class="card-cta-arrow">→</span>
         </div>
-      </div>
+      </a>
+      -->
+
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 02 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
+  <section class="about">
     <div class="section-marker">
-      <span class="section-num">02</span>
-      <span class="section-label">転換 01</span>
+      <span class="section-label">About / 事業所</span>
     </div>
-    <h2 class="section-heading">テンプレ方式の廃案 ── 順序を反転させる</h2>
-
-    <div class="keyphrase-block dark">
-      <div class="keyphrase-mark">"</div>
-      <div class="keyphrase-body">
-        <div class="keyphrase-text">記事に合わせて図解を作るから、<br>テンプレ方式の必要はないね。</div>
+    <div class="about-grid">
+      <div class="about-text">
+        29年の UI/UX デザイン経験をロボティクスへ。<br>
+        R2R2R (Real-to-Render-to-Real) プロセスで、iPhone での 3D スキャンから物理シミュレーション、実機制御までを 1人で担う実験記録。
       </div>
-      <div class="keyphrase-source">Day 193<br>方針転換</div>
-    </div>
-
-    <div class="compare-grid">
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span>テンプレ方式 / パターン化</span>
-          <span class="verdict">廃案</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">順序</span>テンプレを先に作る → 論点をはめ込む</li>
-            <li><span class="item-label">候補</span>タブ切替 / 二項対比 / フロー型 の3種</li>
-            <li><span class="item-label">トレードオフ</span>ブランドは揃うが、毎回の論点が痩せる</li>
-            <li><span class="item-label">構造</span>固定 → 内容が形に合わせて変形</li>
-          </ul>
-        </div>
-      </div>
-      <div class="compare-col adopted">
-        <div class="compare-col-header">
-          <span>都度生成 / 内容駆動</span>
-          <span class="verdict">採用 ★</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">順序</span>記事の論点を見る → 図解の形を作る</li>
-            <li><span class="item-label">担保</span>白黒3色 + 1.5pxボーダー + 2書体だけ固定</li>
-            <li><span class="item-label">トレードオフ</span>ブランドは揺れ得るが、論点は活きる</li>
-            <li><span class="item-label">構造</span>自由 → 形は内容に合わせて変形</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">担保する3つの最小ルール</div>
-      <h3 class="widget-heading">ブランド一貫性はここだけで守る</h3>
-      <div class="cards-3">
-        <div class="card filled">
-          <div class="card-label">RULE 01 / カラー</div>
-          <div class="card-name">3色のみ・白黒反転</div>
-          <div class="card-detail">アクセント色禁止、強調は背景反転</div>
-        </div>
-        <div class="card filled">
-          <div class="card-label">RULE 02 / 線</div>
-          <div class="card-name">1.5px ソリッド</div>
-          <div class="card-detail">破線は警告枠のみ、装飾線は不使用</div>
-        </div>
-        <div class="card filled">
-          <div class="card-label">RULE 03 / 書体</div>
-          <div class="card-name">Plex Mono + Noto Sans JP</div>
-          <div class="card-detail">見出しMono、本文Sans、混在は禁則</div>
-        </div>
+      <div class="about-meta">
+        <div class="meta-row"><span class="meta-key">Designer</span><span class="meta-val">島津 栄一</span></div>
+        <div class="meta-row"><span class="meta-key">Office</span><span class="meta-val">ADAPT DESIGN</span></div>
+        <div class="meta-row"><span class="meta-key">Location</span><span class="meta-val">秋田県男鹿市</span></div>
+        <div class="meta-row"><span class="meta-key">Founded</span><span class="meta-val">2021年10月</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 03 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">03</span>
-      <span class="section-label">転換 02</span>
-    </div>
-    <h2 class="section-heading">「全部図解で作って」── 散文段落の完全廃止</h2>
-
-    <div class="keyphrase-block">
-      <div class="keyphrase-mark">"</div>
-      <div class="keyphrase-body">
-        <div class="keyphrase-text">なんかメリット感じないね。<br>全部図解で作ってみて。</div>
-      </div>
-      <div class="keyphrase-source">Day 193<br>全廃指示</div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">廃止された段落と変換先</div>
-      <h3 class="widget-heading">「読む文章」をすべて視覚要素に置き換える</h3>
-      <div class="cards-3">
-        <div class="card">
-          <div class="card-label">削除 01</div>
-          <div class="card-name">section-lead</div>
-          <div class="card-detail">各セクションの導入文 → 完全廃止。タイトルだけで足りる</div>
-        </div>
-        <div class="card">
-          <div class="card-label">変換 02</div>
-          <div class="card-name">widget-note</div>
-          <div class="card-detail">図解下の補足 → tag-set または value-row</div>
-        </div>
-        <div class="card">
-          <div class="card-label">変換 03</div>
-          <div class="card-name">quote-card</div>
-          <div class="card-detail">引用文 → keyphrase-block(大フレーズ + ソース)</div>
-        </div>
-        <div class="card">
-          <div class="card-label">変換 04</div>
-          <div class="card-name">decision-card</div>
-          <div class="card-detail">採用仕様 → spec-block(アイコン + キー + 値の4分割)</div>
-        </div>
-        <div class="card">
-          <div class="card-label">変換 05</div>
-          <div class="card-name">warning-card</div>
-          <div class="card-detail">警告文 → concern-card(stats + actionタグ)</div>
-        </div>
-        <div class="card">
-          <div class="card-label">変換 06</div>
-          <div class="card-name">closing-statement</div>
-          <div class="card-detail">締めの一文 → before-after(左右対比 + チェック項目)</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="value-row">
-      <div class="value-card struck">
-        <div class="v-label">最初のビジュアル化版</div>
-        <div class="v-num">49</div>
-        <div class="v-unit">KB / 散文 + 図解混在</div>
-        <div class="v-tag">DISCARDED</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">変換後の構成要素</div>
-        <div class="v-num">18</div>
-        <div class="v-unit">視覚コンポーネント</div>
-        <div class="v-tag">FINAL</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">残った散文段落</div>
-        <div class="v-num">0</div>
-        <div class="v-unit">本文中の p タグ</div>
-        <div class="v-tag">TARGET</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 04 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">04</span>
-      <span class="section-label">選択</span>
-    </div>
-    <h2 class="section-heading">STUDIO と GitHub Pages ── 役割の違う2層を共存させる</h2>
-
-    <div class="compare-grid">
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span>STUDIO / 通常版</span>
-          <span class="verdict">読む層</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">HTML/CSS/JS</span>制限的、Embedのiframeのみ</li>
-            <li><span class="item-label">編集</span>Cmd+V で md を貼るだけ</li>
-            <li><span class="item-label">サイト統合</span>adaptdesign.jp 配下</li>
-            <li><span class="item-label">コスト</span>有料プラン込み</li>
-          </ul>
-        </div>
-      </div>
-      <div class="compare-col adopted">
-        <div class="compare-col-header">
-          <span>GitHub Pages / インタラクティブ版</span>
-          <span class="verdict">触る層</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">HTML/CSS/JS</span>完全自由、JS がそのまま動く</li>
-            <li><span class="item-label">編集</span>git push (Web UI でも可)</li>
-            <li><span class="item-label">サイト統合</span>別 URL、相互リンクで接続</li>
-            <li><span class="item-label">コスト</span>無料 (Public リポジトリ)</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">3つの選択肢から1つ</div>
-      <h3 class="widget-heading">公開先の構造をどう選ぶか</h3>
-
-      <div class="pillars" data-count="3">
-        <div class="pillar" data-axis="A">
-          <div class="pillar-axis">A</div>
-          <div class="pillar-name">GH Pages 全寄せ</div>
-        </div>
-        <div class="pillar" data-axis="B">
-          <div class="pillar-axis">B</div>
-          <div class="pillar-name">iframe 埋込</div>
-        </div>
-        <div class="pillar" data-axis="C">
-          <div class="pillar-axis">C</div>
-          <div class="pillar-name">ウィジェット部分埋込</div>
-        </div>
-      </div>
-
-      <div class="panel-empty"><span class="arrow">↑</span>案を選択してください</div>
-
-      <div class="panel" data-axis="A">
-        <div class="panel-header">
-          <span>案A ── 全部 GitHub Pages に置く + STUDIO から誘導</span>
-          <span class="verdict">採用 ★</span>
-        </div>
-        <div class="panel-body">
-          <div class="cards-3">
-            <div class="card filled">
-              <div class="card-label">仕組み</div>
-              <div class="card-name">役割分担</div>
-              <div class="card-detail">STUDIO=読む / GH Pages=触る</div>
-            </div>
-            <div class="card filled">
-              <div class="card-label">URL</div>
-              <div class="card-name">別ドメイン</div>
-              <div class="card-detail">pixelstomotors.github.io/interactive-articles/</div>
-            </div>
-            <div class="card filled">
-              <div class="card-label">接続</div>
-              <div class="card-name">バナーとロゴで往復</div>
-              <div class="card-detail">STUDIO上部にCTA、各記事上部にDAYタグでSTUDIO戻り</div>
-            </div>
-          </div>
-          <div class="tag-set">
-            <span class="tag solid"><span>JSがそのまま動く</span></span>
-            <span class="tag solid"><span>無料</span></span>
-            <span class="tag solid"><span>役割が明確</span></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" data-axis="B">
-        <div class="panel-header">
-          <span>案B ── STUDIO記事内に iframe で GH Pages 版を埋込</span>
-          <span class="verdict">不採用</span>
-        </div>
-        <div class="panel-body">
-          <div class="cards-3">
-            <div class="card">
-              <div class="card-label">仕組み</div>
-              <div class="card-name">中身を委譲</div>
-              <div class="card-detail">URLはadaptdesign.jp、表示中身はGH Pagesから</div>
-            </div>
-            <div class="card">
-              <div class="card-label">課題</div>
-              <div class="card-name">高さ調整が必要</div>
-              <div class="card-detail">レスポンシブで工夫が要る</div>
-            </div>
-            <div class="card">
-              <div class="card-label">体験</div>
-              <div class="card-name">「読む」と「触る」が混在</div>
-              <div class="card-detail">体験の役割分担が曖昧になる</div>
-            </div>
-          </div>
-          <div class="tag-set">
-            <span class="tag">URLは一貫</span>
-            <span class="tag">役割の境界がぼやける</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" data-axis="C">
-        <div class="panel-header">
-          <span>案C ── 図解ウィジェットだけを部分埋込(従来通り)</span>
-          <span class="verdict">現状維持</span>
-        </div>
-        <div class="panel-body">
-          <div class="cards-3">
-            <div class="card">
-              <div class="card-label">仕組み</div>
-              <div class="card-name">これまでと同じ</div>
-              <div class="card-detail">本文はSTUDIO、図解は要所でEmbed</div>
-            </div>
-            <div class="card">
-              <div class="card-label">利点</div>
-              <div class="card-name">運用変更なし</div>
-              <div class="card-detail">新しい層を建てる必要がない</div>
-            </div>
-            <div class="card">
-              <div class="card-label">欠点</div>
-              <div class="card-name">記事全体の図解化は不可</div>
-              <div class="card-detail">「触る記事」という体験は得られない</div>
-            </div>
-          </div>
-          <div class="tag-set">
-            <span class="tag">変化なし</span>
-            <span class="tag">体験拡張なし</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="keyphrase-block dark">
-      <div class="keyphrase-mark">"</div>
-      <div class="keyphrase-body">
-        <div class="keyphrase-text">役割が違うコンテンツとして共存させる。<br>STUDIO は「読む」、インタラクティブ版は「触る」。</div>
-      </div>
-      <div class="keyphrase-source">Day 193<br>二層構造決定</div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 05 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">05</span>
-      <span class="section-label">生成</span>
-    </div>
-    <h2 class="section-heading">Claude Project でシステム化 ── 同じ品質で量産する仕組み</h2>
-
-    <div class="spec-block">
-      <div class="spec-block-header">
-        <span class="stamp">確定構成</span>
-        <span class="title">Pixels to Motors Visual Article Builder</span>
-      </div>
-      <div class="spec-grid">
-        <div class="spec-item">
-          <div class="spec-icon">⚙</div>
-          <div class="spec-key">カスタム指示</div>
-          <div class="spec-value">PROJECT_<br>INSTRUCTIONS.md</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">▤</div>
-          <div class="spec-key">ナレッジ 01</div>
-          <div class="spec-value">TEMPLATE.html<br>34 KB</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">▦</div>
-          <div class="spec-key">ナレッジ 02</div>
-          <div class="spec-value">COMPONENTS.md<br>16 KB</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">↳</div>
-          <div class="spec-key">入力</div>
-          <div class="spec-value">DAY{N}_<br>article.md</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="value-row">
-      <div class="value-card">
-        <div class="v-label">定義済みコンポーネント</div>
-        <div class="v-num">18</div>
-        <div class="v-unit">種類 / 視覚部品</div>
-        <div class="v-tag">CATALOG</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">記事生成までの手順</div>
-        <div class="v-num">1</div>
-        <div class="v-unit">md添付 → HTML出力</div>
-        <div class="v-tag">FLOW</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">記事公開までの時間</div>
-        <div class="v-num">3-5</div>
-        <div class="v-unit">分 / 1記事あたり</div>
-        <div class="v-tag">TARGET</div>
-      </div>
-    </div>
-
-    <div class="concern-card">
-      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
-      <div class="concern-body">
-        <div class="concern-label">運用上の落とし穴</div>
-        <div class="concern-title">原則が抜けると散文段落が混入する</div>
-        <div class="concern-stats">
-          <div class="concern-stat"><div class="k">原因</div><div class="v">コピペ漏れ</div></div>
-          <div class="concern-stat"><div class="k">影響</div><div class="v">品質ブレ</div></div>
-          <div class="concern-stat"><div class="k">対策</div><div class="v">指示文に集約</div></div>
-        </div>
-        <div class="concern-action">→ 試行錯誤で固まったルールは PROJECT_INSTRUCTIONS.md に一元化する</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 06 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">06</span>
-      <span class="section-label">接続</span>
-    </div>
-    <h2 class="section-heading">バナーで二層を往復させる ── STUDIO 上部に置く CTA</h2>
-
-    <div class="spec-block">
-      <div class="spec-block-header">
-        <span class="stamp">確定仕様</span>
-        <span class="title">P2M_Interactive_Banner</span>
-      </div>
-      <div class="spec-grid">
-        <div class="spec-item">
-          <div class="spec-icon">⟷</div>
-          <div class="spec-key">サイズ</div>
-          <div class="spec-value">720 × 160<br>max-width</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">◼</div>
-          <div class="spec-key">カラー</div>
-          <div class="spec-value">#0d0d0d<br>+ #f5f5f0</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">▤</div>
-          <div class="spec-key">構成</div>
-          <div class="spec-value">アイコン +<br>2行 + CTA</div>
-        </div>
-        <div class="spec-item">
-          <div class="spec-icon">◎</div>
-          <div class="spec-key">ホバー</div>
-          <div class="spec-value">グレー化<br>動きなし</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="before-after">
-      <div class="ba-col before">
-        <div class="ba-stamp">BEFORE / 初版</div>
-        <div class="ba-icon-row">↑ ⇄ →</div>
-        <div class="ba-name">3種の動的アニメーション</div>
-        <div class="ba-axes">
-          <div class="ba-axis"><span class="axis-name">浮き上がり</span><span class="axis-status">2px</span></div>
-          <div class="ba-axis"><span class="axis-name">白黒反転</span><span class="axis-status">CTA</span></div>
-          <div class="ba-axis"><span class="axis-name">矢印スライド</span><span class="axis-status">→ →</span></div>
-        </div>
-      </div>
-      <div class="ba-arrow">→</div>
-      <div class="ba-col after">
-        <div class="ba-stamp">AFTER / 最終版</div>
-        <div class="ba-icon-row">◯ ─ ◯</div>
-        <div class="ba-name">グレー化のみ・動きなし</div>
-        <div class="ba-axes">
-          <div class="ba-axis"><span class="axis-name">浮き上がり</span><span class="axis-status">✕ 廃止</span></div>
-          <div class="ba-axis"><span class="axis-name">白黒反転</span><span class="axis-status">✕ 廃止</span></div>
-          <div class="ba-axis"><span class="axis-name">ホバー</span><span class="axis-status">◎ 背景のみ</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">設置箇所</div>
-      <h3 class="widget-heading">STUDIO 記事への組込み手順</h3>
-      <div class="tag-set">
-        <span class="tag solid"><span>STUDIO 編集画面</span></span>
-        <span class="tag solid"><span>「埋め込み」ブロック</span></span>
-        <span class="tag solid"><span>HTML全体をコピペ</span></span>
-        <span class="tag">href を新URLに書換</span>
-        <span class="tag">記事1本につき1か所のみ</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 07 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">07</span>
-      <span class="section-label">インフラ</span>
-    </div>
-    <h2 class="section-heading">GitHub Pages 公開構造 ── URL と分離設計</h2>
-
-    <div class="widget">
-      <div class="widget-label">PixelsToMotors/interactive-articles (Public)</div>
-      <h3 class="widget-heading">リポジトリの3要素</h3>
-      <div class="cards-3">
-        <div class="card">
-          <div class="card-label">FILE 01 / 触らない</div>
-          <div class="card-name">index.html</div>
-          <div class="card-detail">記事一覧。JS で articles.json を fetch して動的描画。初回作成後は編集不要</div>
-        </div>
-        <div class="card filled">
-          <div class="card-label">FILE 02 / 毎回編集</div>
-          <div class="card-name">articles.json</div>
-          <div class="card-detail">記事メタデータ。新記事追加時に配列先頭に1ブロック追記するだけ</div>
-        </div>
-        <div class="card">
-          <div class="card-label">DIR 03 / 毎回追加</div>
-          <div class="card-name">{slug}/index.html</div>
-          <div class="card-detail">記事ごとのフォルダ + 中に index.html。Visual Article Builder の出力を配置</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">資産の分離理由</div>
-      <h3 class="widget-heading">なぜ Public リポジトリを切り出したか</h3>
-      <div class="cards-2">
-        <div class="card filled">
-          <div class="card-label">PRIVATE / 既存</div>
-          <div class="card-name">r2r2r-content</div>
-          <div class="card-detail">記事資産 (md / 図解原稿)。Free plan で Pages は使えない</div>
-        </div>
-        <div class="card filled">
-          <div class="card-label">PUBLIC / 新設</div>
-          <div class="card-name">interactive-articles</div>
-          <div class="card-detail">公開HTMLのみ。Pages 有効、原稿と公開物を分離</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">Settings → Pages</div>
-      <h3 class="widget-heading">GitHub Pages 有効化フロー</h3>
-      <ol class="flow-steps">
-        <li class="flow-step">
-          <div class="flow-step-num">01</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>リポジトリ Settings → Pages を開く</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">SETUP</span>
-              <span class="tag">Public リポジトリのみ可</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">02</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>Source: Deploy from a branch を選択</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">SOURCE</span>
-              <span class="tag">Actions ではなく branch 配信</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">03</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>Branch: main / (root) を選択</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">BRANCH</span>
-              <span class="tag">サブディレクトリ不要</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">04</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>Save → 1〜2分待つ</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">WAIT</span>
-              <span class="tag">初回ビルドのみ若干かかる</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">05</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>https://pixelstomotors.github.io/interactive-articles/ で公開</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">LIVE</span>
-              <span class="tag">記事URL: /{slug}/</span>
-              <span class="tag">STUDIO と slug を揃える</span>
-            </div>
-          </div>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 08 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">08</span>
-      <span class="section-label">運用</span>
-    </div>
-    <h2 class="section-heading">articles.json で動的化 ── 3記事目で破綻しない設計</h2>
-
-    <div class="compare-grid">
-      <div class="compare-col">
-        <div class="compare-col-header">
-          <span>初版 / 直書き構成</span>
-          <span class="verdict">廃案</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">構造</span>index.html に記事カードを HTML 直書き</li>
-            <li><span class="item-label">追加</span>記事ごとに index.html を編集</li>
-            <li><span class="item-label">限界</span>3記事目で疲れる、100記事目では破綻</li>
-            <li><span class="item-label">負債</span>初期の運用設計が10ヶ月後に効いてくる</li>
-          </ul>
-        </div>
-      </div>
-      <div class="compare-col adopted">
-        <div class="compare-col-header">
-          <span>最終 / JSON 分離 + JS 動的描画</span>
-          <span class="verdict">採用 ★</span>
-        </div>
-        <div class="compare-col-body">
-          <ul class="compare-list">
-            <li><span class="item-label">構造</span>articles.json + index.html (fetch で読込)</li>
-            <li><span class="item-label">追加</span>JSON 配列の先頭に1ブロック追記のみ</li>
-            <li><span class="item-label">挙動</span>day 降順で自動ソート、件数カウンタも自動</li>
-            <li><span class="item-label">永続性</span>100記事目でも持つ運用構造</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="widget">
-      <div class="widget-label">記事1本追加の手順</div>
-      <h3 class="widget-heading">最終的に固まった3操作運用</h3>
-      <ol class="flow-steps">
-        <li class="flow-step">
-          <div class="flow-step-num">01</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>新フォルダ + index.html を Upload</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">GITHUB</span>
-              <span class="tag">Add file → Upload files</span>
-              <span class="tag">フォルダ名 = slug</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">02</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>articles.json に1ブロック追記</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">JSON</span>
-              <span class="tag">鉛筆アイコンで編集</span>
-              <span class="tag">配列の先頭に追加</span>
-            </div>
-          </div>
-        </li>
-        <li class="flow-step">
-          <div class="flow-step-num">03</div>
-          <div class="flow-step-body">
-            <div class="flow-step-title">
-              <span>STUDIO 記事に P2M_Interactive_Banner を埋込</span>
-              <span class="toggle-mark">+</span>
-            </div>
-            <div class="flow-step-tags">
-              <span class="tag tag-key">STUDIO</span>
-              <span class="tag">「埋め込み」ブロック</span>
-              <span class="tag">href を新 URL に書換</span>
-            </div>
-          </div>
-        </li>
-      </ol>
-    </div>
-
-    <div class="value-row">
-      <div class="value-card">
-        <div class="v-label">公開までの操作数</div>
-        <div class="v-num">3</div>
-        <div class="v-unit">アクション / 1記事</div>
-        <div class="v-tag">OPS</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">md 投稿から公開まで</div>
-        <div class="v-num">3-5</div>
-        <div class="v-unit">分 / 想定</div>
-        <div class="v-tag">TIME</div>
-      </div>
-      <div class="value-card">
-        <div class="v-label">index.html の編集</div>
-        <div class="v-num">0</div>
-        <div class="v-unit">回 / 記事追加時</div>
-        <div class="v-tag">UNTOUCHED</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ -->
-  <!-- SECTION 09 -->
-  <!-- ════════════════════════════════════════ -->
-  <section class="article-section">
-    <div class="section-marker">
-      <span class="section-num">09</span>
-      <span class="section-label">反省</span>
-    </div>
-    <h2 class="section-heading">このセッションが示したこと ── 二つの転換点</h2>
-
-    <div class="widget">
-      <div class="widget-label">設計の意思決定</div>
-      <h3 class="widget-heading">非典型なデザインシステムの選択</h3>
-      <div class="cards-2">
-        <div class="card filled">
-          <div class="card-label">転換 01 / 順序の反転</div>
-          <div class="card-name">テンプレ → 都度生成</div>
-          <div class="card-detail">部品は最小限、原則は固定、構造は自由。固定テンプレに論点をはめるのではなく、論点を見てから図解の形を作る</div>
-        </div>
-        <div class="card filled">
-          <div class="card-label">転換 02 / 役割の分離</div>
-          <div class="card-name">混在 → 二層分担</div>
-          <div class="card-detail">STUDIO 版とインタラクティブ版で「読む」と「触る」を分けた。同じ情報を別の体験として2回提供する設計</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="concern-card">
-      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
-      <div class="concern-body">
-        <div class="concern-label">Build-in-public 長期運用の教訓</div>
-        <div class="concern-title">初期の運用設計は10ヶ月後の負債になる</div>
-        <div class="concern-stats">
-          <div class="concern-stat"><div class="k">破綻ライン</div><div class="v">3 記事</div></div>
-          <div class="concern-stat"><div class="k">耐用</div><div class="v">100 記事+</div></div>
-          <div class="concern-stat"><div class="k">差を分けるもの</div><div class="v">初期動的化</div></div>
-        </div>
-        <div class="concern-action">→ 早めに JSON 分離 + JS 動的描画にしておくと、未来の自分が助かる</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CLOSING -->
-  <div class="closing-block">
-    <div class="closing-label">本日の結論 ── 「読む」と「触る」を二層で同居させた日</div>
-    <div class="closing-grid">
-      <div class="closing-side before">
-        <div class="when">BEFORE</div>
-        <div class="world">STUDIO 単層・散文中心の公開層</div>
-        <div class="seen">
-          <div class="seen-item"><span>STUDIO で md を公開</span><span>○</span></div>
-          <div class="seen-item"><span>図解は記事内に部分埋込</span><span>○</span></div>
-          <div class="seen-item"><span>全要素を図解化した記事</span><span>✕</span></div>
-          <div class="seen-item"><span>記事追加の自動化</span><span>✕</span></div>
-          <div class="seen-item"><span>「触る記事」という体験</span><span>✕</span></div>
-        </div>
-      </div>
-      <div class="closing-arrow">→</div>
-      <div class="closing-side after">
-        <div class="when">AFTER</div>
-        <div class="world">STUDIO + GitHub Pages の二層公開システム</div>
-        <div class="seen">
-          <div class="seen-item"><span>STUDIO 版 (読む)</span><span>◎</span></div>
-          <div class="seen-item"><span>インタラクティブ版 (触る)</span><span>◎</span></div>
-          <div class="seen-item"><span>バナーとロゴで相互リンク</span><span>◎</span></div>
-          <div class="seen-item"><span>3操作で公開完結</span><span>◎</span></div>
-          <div class="seen-item"><span>articles.json で動的化</span><span>◎</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
   <footer class="footer">
     <div>© ADAPT DESIGN / Pixels to Motors</div>
     <div>UX × AI × ROBOTICS</div>
   </footer>
 
 </div>
-
-<script>
-  document.querySelectorAll('.widget').forEach(widget => {
-    const pillars = widget.querySelectorAll('.pillar');
-    if (pillars.length === 0) return;
-    const panels = widget.querySelectorAll('.panel');
-    const emptyPanel = widget.querySelector('.panel-empty');
-    const sceneGroups = widget.querySelectorAll('.scene-group');
-
-    pillars.forEach(p => {
-      p.addEventListener('click', () => {
-        const axis = p.dataset.axis;
-        pillars.forEach(x => x.classList.remove('active'));
-        p.classList.add('active');
-        panels.forEach(panel => panel.classList.remove('active'));
-        const target = widget.querySelector(`.panel[data-axis="${axis}"]`);
-        if (target) target.classList.add('active');
-        if (emptyPanel) emptyPanel.style.display = 'none';
-        sceneGroups.forEach(g => {
-          g.classList.toggle('active', g.dataset.axis === axis);
-        });
-      });
-    });
-  });
-
-  document.querySelectorAll('.flow-step').forEach(step => {
-    step.addEventListener('click', () => step.classList.toggle('active'));
-  });
-</script>
 
 </body>
 </html>
