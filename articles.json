@@ -1,0 +1,12 @@
+{
+  "articles": [
+    {
+      "day": 192,
+      "slug": "setting-up-the-side-camera",
+      "date": "2026-05-07",
+      "category": "デジタルツイン学習",
+      "series": "mechArm 270 Pi 動的追従の限界を探る ── Log #10",
+      "title": "視点を増やす日 ── 設計判断と iPhone 2台体制の物理構築"
+    }
+  ]
+}
