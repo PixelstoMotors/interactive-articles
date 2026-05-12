@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mechArm 270 Pi 動的追従の限界を探る Log#10 | 視点を増やす日 設計判断とiPhone 2台体制の物理構築</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --white: #f5f5f0;
+  --gray-light: #e8e8e3;
+  --gray-mid: #999;
+  --gray-dark: #444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+.article-root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--black);
+  margin: 0 -24px;
+  padding: 12px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.topbar .brand { font-weight: 700; }
+.topbar a { color: inherit; text-decoration: none; transition: opacity 0.15s ease; }
+.topbar a:hover { opacity: 0.55; }
+.topbar .brand-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--black); border-radius: 50%;
+  margin-right: 8px; transform: translateY(-1px);
+}
+.topbar .day-tag { border: 1px solid var(--black); padding: 4px 10px; font-weight: 700; }
+
+/* Hero */
+.hero { padding: 48px 0 32px; border-bottom: 1.5px solid var(--black); margin-bottom: 48px; }
+.hero-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 16px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.hero-label span { display: flex; align-items: center; gap: 6px; }
+.hero-label span::before {
+  content: ""; width: 4px; height: 4px;
+  background: var(--black); border-radius: 50%;
+}
+.hero h1 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700; line-height: 1.25;
+  letter-spacing: -0.01em; margin-bottom: 32px;
+}
+
+/* Hero遷移図 */
+.hero-transition {
+  border: 1.5px solid var(--black);
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  align-items: stretch;
+}
+.hero-trans-col { padding: 22px 22px; }
+.hero-trans-col.from { background: var(--white); }
+.hero-trans-col.to { background: var(--black); color: var(--white); }
+.hero-trans-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 24px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.hero-trans-col .step {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 8px; opacity: 0.7;
+}
+.hero-trans-col .label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700; margin-bottom: 12px;
+}
+.hero-trans-col .icons {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.hero-trans-col .icon-pill {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.05em;
+}
+
+/* Takeaway (シンプル3カード化) */
+.takeaway {
+  background: var(--black); color: var(--white);
+  padding: 28px 28px; margin-bottom: 64px;
+  border: 1.5px solid var(--black);
+}
+.takeaway-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-light);
+  margin-bottom: 16px; opacity: 0.7;
+}
+.takeaway-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.takeaway-card { border: 1px solid var(--white); padding: 16px; }
+.takeaway-card .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; margin-bottom: 8px;
+}
+.takeaway-card .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 8px; line-height: 1.45;
+}
+.takeaway-card .detail { font-size: 11.5px; line-height: 1.6; opacity: 0.85; }
+
+/* Section */
+.article-section { margin-bottom: 80px; }
+.section-marker {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 12px;
+}
+.section-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.08em; color: var(--gray-dark);
+}
+.section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+}
+.section-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 700; line-height: 1.4;
+  margin-bottom: 28px; letter-spacing: 0.01em;
+}
+
+/* Widget */
+.widget {
+  border: 1.5px solid var(--black);
+  padding: 22px 20px;
+  background: var(--white);
+  margin: 20px 0;
+}
+.widget-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 6px;
+}
+.widget-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 18px; letter-spacing: 0.02em; line-height: 1.4;
+}
+
+/* Scene */
+.scene-wrap {
+  border: 1px solid var(--black);
+  background: var(--white);
+  margin-bottom: 14px;
+  padding: 16px 12px;
+}
+.scene-svg { display: block; width: 100%; height: auto; }
+
+/* Cards */
+.cards-2, .cards-3, .cards-4 { display: grid; gap: 10px; }
+.cards-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-4 { grid-template-columns: repeat(4, 1fr); }
+.card { border: 1px solid var(--black); padding: 12px; }
+.card.filled { background: var(--black); color: var(--white); }
+.card-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px; opacity: 0.7;
+}
+.card-name { font-size: 13px; font-weight: 600; line-height: 1.45; margin-bottom: 4px; }
+.card-detail { font-size: 11.5px; line-height: 1.55; opacity: 0.85; }
+
+/* ========== 新コンポーネント: Value Card (大きな数値) ========== */
+.value-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+.value-card {
+  border: 1.5px solid var(--black);
+  padding: 18px 16px;
+  text-align: center;
+  position: relative;
+}
+.value-card.struck { background: var(--gray-light); opacity: 0.85; }
+.value-card .v-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 28px; font-weight: 700;
+  line-height: 1; margin-bottom: 4px;
+}
+.value-card.struck .v-num { text-decoration: line-through; text-decoration-thickness: 2px; }
+.value-card .v-unit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1px solid var(--black);
+  display: inline-block;
+  font-weight: 700;
+}
+.value-card.struck .v-tag { background: var(--black); color: var(--white); }
+
+/* ========== 新コンポーネント: Keyphrase Block ========== */
+.keyphrase-block {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 60px 1fr 100px;
+  align-items: stretch;
+}
+.keyphrase-block.dark { background: var(--black); color: var(--white); }
+.keyphrase-mark {
+  background: var(--black); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 32px; font-weight: 700;
+}
+.keyphrase-block.dark .keyphrase-mark { background: var(--white); color: var(--black); }
+.keyphrase-body {
+  padding: 20px 22px;
+  display: flex; align-items: center;
+}
+.keyphrase-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(15px, 2vw, 19px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.keyphrase-source {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px;
+  border-left: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+}
+.keyphrase-block.dark .keyphrase-source { border-left-color: var(--white); }
+
+/* ========== 新コンポーネント: Spec Grid (アイコン付きスペック) ========== */
+.spec-block {
+  background: var(--black); color: var(--white);
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+}
+.spec-block-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(245, 245, 240, 0.2);
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px;
+}
+.spec-block-header .stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; text-transform: uppercase;
+}
+.spec-block-header .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+}
+.spec-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.spec-item {
+  padding: 18px 14px;
+  text-align: center;
+  border-right: 1px solid rgba(245, 245, 240, 0.2);
+}
+.spec-item:last-child { border-right: none; }
+.spec-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 10px; line-height: 1;
+}
+.spec-key {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 6px;
+}
+.spec-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700; line-height: 1.3;
+}
+
+/* ========== 新コンポーネント: Concern Card (警告視覚化) ========== */
+.concern-card {
+  border: 2px dashed var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+}
+.concern-icon-wrap {
+  display: flex; align-items: center; justify-content: center;
+  border-right: 2px dashed var(--black);
+}
+.concern-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 36px; font-weight: 700;
+}
+.concern-body { padding: 16px 18px; }
+.concern-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 4px;
+}
+.concern-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.concern-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.concern-stat {
+  border: 1px solid var(--black);
+  padding: 8px 10px;
+  text-align: center;
+}
+.concern-stat .k {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 4px;
+}
+.concern-stat .v {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+}
+.concern-action {
+  margin-top: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  background: var(--black);
+  color: var(--white);
+  display: inline-block;
+}
+
+/* ========== 新コンポーネント: Before/After Visual ========== */
+.before-after {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+}
+.ba-col { padding: 22px 18px; }
+.ba-col.before { background: var(--white); }
+.ba-col.after { background: var(--black); color: var(--white); }
+.ba-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 26px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.ba-stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 14px; opacity: 0.6;
+}
+.ba-icon-row {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 26px; font-weight: 700;
+  line-height: 1;
+}
+.ba-name {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.ba-axes { display: flex; flex-direction: column; gap: 6px; }
+.ba-axis {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+}
+.ba-axis .axis-name { font-weight: 700; }
+.ba-axis .axis-status { opacity: 0.8; }
+
+/* ========== タグセット (panel内のwidget-noteの代わり) ========== */
+.tag-set {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 12px;
+}
+.tag-set .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.04em;
+}
+.tag-set .tag.solid { background: currentColor; }
+.tag-set .tag.solid span { color: var(--white); }
+.panel-body .tag-set .tag.solid span { color: var(--white); }
+
+/* Pillars */
+.pillars { display: grid; gap: 8px; margin-bottom: 16px; }
+.pillars[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+.pillars[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.pillars[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+.pillar {
+  border: 1.5px solid var(--black);
+  background: var(--white); color: var(--black);
+  padding: 14px 8px; cursor: pointer; text-align: center;
+  transition: background 0.18s, color 0.18s;
+  font-family: "IBM Plex Mono", monospace;
+}
+.pillar:hover { background: var(--gray-light); }
+.pillar.active { background: var(--black); color: var(--white); }
+.pillar-axis { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.pillar-name { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+
+.panel-empty {
+  border: 1px dashed var(--gray-mid);
+  padding: 20px 16px; text-align: center;
+  color: var(--gray-mid); font-size: 11.5px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+}
+.panel-empty .arrow {
+  display: block; font-size: 18px; margin-bottom: 6px;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.panel { display: none; border: 1.5px solid var(--black); animation: slideIn 0.28s ease-out; }
+.panel.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.panel-header {
+  background: var(--black); color: var(--white);
+  padding: 12px 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px;
+}
+.panel-header .verdict { font-weight: 700; }
+.panel-body { padding: 16px; }
+.scene-group { transition: opacity 0.3s; opacity: 0.25; }
+.scene-group.active { opacity: 1; }
+
+/* Compare */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare-col { border: 1.5px solid var(--black); }
+.compare-col.adopted { background: var(--black); color: var(--white); }
+.compare-col-header {
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.compare-col.adopted .compare-col-header { border-bottom-color: var(--white); }
+.compare-col-header .verdict { font-weight: 700; }
+.compare-col-body { padding: 14px 16px; }
+.compare-list { list-style: none; padding: 0; margin: 0; }
+.compare-list li {
+  font-size: 12.5px; line-height: 1.5;
+  padding: 8px 0 8px 16px;
+  position: relative;
+  border-bottom: 1px solid var(--gray-light);
+}
+.compare-col.adopted .compare-list li { border-bottom-color: rgba(245, 245, 240, 0.15); }
+.compare-list li:last-child { border-bottom: none; }
+.compare-list li::before { content: "—"; position: absolute; left: 0; opacity: 0.6; }
+.compare-list .item-label {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+/* Flow */
+.flow-steps { list-style: none; padding: 0; margin: 0; }
+.flow-step {
+  border: 1.5px solid var(--black);
+  margin-bottom: 10px; background: var(--white);
+  display: grid; grid-template-columns: 56px 1fr;
+  align-items: stretch; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+.flow-step:hover { background: var(--gray-light); }
+.flow-step.active { background: var(--black); color: var(--white); }
+.flow-step:last-child { margin-bottom: 0; }
+.flow-step:not(:last-child)::after {
+  content: ""; position: absolute;
+  left: 28px; bottom: -10px;
+  width: 1.5px; height: 10px;
+  background: var(--black);
+}
+.flow-step-num {
+  background: var(--black); color: var(--white);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.flow-step.active .flow-step-num { background: var(--white); color: var(--black); }
+.flow-step-body { padding: 10px 14px; }
+.flow-step-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px; font-weight: 600; line-height: 1.4;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.flow-step-title .toggle-mark { font-size: 11px; opacity: 0.5; transition: transform 0.2s; }
+.flow-step.active .flow-step-title .toggle-mark { transform: rotate(45deg); opacity: 1; }
+.flow-step-tags {
+  display: none;
+  flex-wrap: wrap; gap: 5px;
+  padding-top: 8px; margin-top: 8px;
+  border-top: 1px solid var(--gray-light);
+}
+.flow-step.active .flow-step-tags {
+  display: flex; animation: slideIn 0.2s ease-out;
+  border-top-color: rgba(245, 245, 240, 0.2);
+}
+.flow-step-tags .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5px; letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.flow-step-tags .tag.tag-key { font-weight: 700; opacity: 1; }
+
+/* Group Diagram */
+.group-diagram {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.group-col {
+  border: 1.5px solid var(--black);
+  padding: 14px; background: var(--white);
+}
+.group-col.primary { background: var(--black); color: var(--white); }
+.group-col-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 700;
+  margin-bottom: 6px; opacity: 0.7;
+  letter-spacing: 0.08em;
+}
+.group-col-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 10px; line-height: 1.3;
+}
+.group-col-joints {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px; font-weight: 700;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+  display: inline-block; margin-bottom: 10px;
+}
+.group-col-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.group-col-tags .gtag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5px;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+}
+
+/* SVG */
+.mat-rect { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.arm-base { fill: var(--gray-light); stroke: var(--black); stroke-width: 1.5; }
+.block-marker { fill: var(--black); }
+.cam-group .cam-marker { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.cam-group.active .cam-marker { fill: var(--black); }
+.cam-group .cam-tag {
+  fill: var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 700;
+}
+.cam-group.active .cam-tag { fill: var(--white); }
+.cam-group .cam-ray {
+  stroke: var(--black); stroke-width: 1; stroke-dasharray: 3 3;
+  fill: none; opacity: 0; transition: opacity 0.3s;
+}
+.cam-group.active .cam-ray { opacity: 0.4; }
+
+/* Closing as Before/After */
+.closing-block {
+  margin: 64px 0 32px;
+  border: 1.5px solid var(--black);
+}
+.closing-label {
+  background: var(--black); color: var(--white);
+  padding: 14px 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.closing-grid {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+}
+.closing-side { padding: 32px 28px; }
+.closing-side.before { background: var(--white); }
+.closing-side.after { background: var(--black); color: var(--white); }
+.closing-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 32px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.closing-side .when {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  margin-bottom: 12px; opacity: 0.6;
+}
+.closing-side .world {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.8vw, 24px);
+  font-weight: 700; line-height: 1.35;
+  margin-bottom: 16px;
+}
+.closing-side .seen {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.closing-side .seen-item {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  display: flex; justify-content: space-between;
+}
+
+/* Footer */
+.footer {
+  border-top: 1.5px solid var(--black);
+  padding: 32px 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--gray-dark);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 12px;
+}
+
+/* ========== Illustration ========== */
+.illust { display: block; width: 100%; height: auto; }
+.illust-line { stroke: var(--black); stroke-width: 1.5; fill: none; }
+.illust-line-bold { stroke: var(--black); stroke-width: 2.5; fill: none; }
+.illust-fill { fill: var(--black); }
+.illust-base { fill: var(--gray-light); stroke: var(--black); stroke-width: 1.5; }
+.illust-white { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.illust-text { font-family: "IBM Plex Mono", monospace; font-size: 9px; fill: var(--black); }
+.illust-text.label { font-weight: 700; }
+.illust-dim { stroke: var(--black); stroke-width: 1; }
+.illust-dim-text { font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 700; fill: var(--black); }
+.illust-blind {
+  stroke: var(--black); stroke-width: 1.2;
+  stroke-dasharray: 3 3; fill: none; opacity: 0.5;
+}
+.illust-ray {
+  stroke: var(--black); stroke-width: 1;
+  stroke-dasharray: 4 3; fill: none; opacity: 0.5;
+}
+
+/* Hero illustration */
+.hero-illust {
+  width: 100%; height: 88px;
+  margin-top: 14px;
+}
+.hero-trans-col.to .illust-line { stroke: var(--white); }
+.hero-trans-col.to .illust-line-bold { stroke: var(--white); }
+.hero-trans-col.to .illust-fill { fill: var(--white); }
+.hero-trans-col.to .illust-text { fill: var(--white); }
+.hero-trans-col.to .illust-base { fill: rgba(245,245,240,0.25); stroke: var(--white); }
+.hero-trans-col.to .illust-white { fill: var(--black); stroke: var(--white); }
+.hero-trans-col.to .illust-ray { stroke: var(--white); }
+
+/* Grip illust (Section 03) */
+.grip-illust-wrap {
+  border-bottom: 1px solid var(--black);
+  padding: 12px 16px;
+  background: var(--white);
+}
+.compare-col.adopted .grip-illust-wrap {
+  background: rgba(245,245,240,0.06);
+  border-bottom-color: var(--white);
+}
+.compare-col.adopted .illust-line { stroke: var(--white); }
+.compare-col.adopted .illust-line-bold { stroke: var(--white); }
+.compare-col.adopted .illust-fill { fill: var(--white); }
+.compare-col.adopted .illust-text { fill: var(--white); }
+.compare-col.adopted .illust-white { fill: var(--black); stroke: var(--white); }
+.compare-col.adopted .illust-dim { stroke: var(--white); }
+.compare-col.adopted .illust-dim-text { fill: var(--white); }
+.compare-col.adopted .illust-blind { stroke: var(--white); }
+.grip-illust { width: 100%; height: 140px; }
+
+/* Concern illust (12mm clearance) */
+.concern-illust-wrap {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--black);
+}
+.concern-illust { width: 100%; max-width: 480px; height: 130px; margin: 0 auto; display: block; }
+
+/* Funnel illust (Section 04) */
+.funnel-block {
+  border: 1.5px solid var(--black);
+  padding: 24px 22px;
+  background: var(--white);
+  margin: 24px 0;
+  text-align: center;
+}
+.funnel-block .funnel-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 6px;
+}
+.funnel-block .funnel-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 20px;
+}
+.funnel-illust {
+  width: 100%; max-width: 500px;
+  height: 300px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Closing illust */
+.closing-illust { width: 100%; height: 140px; margin-bottom: 18px; }
+.closing-side.after .illust-line { stroke: var(--white); }
+.closing-side.after .illust-line-bold { stroke: var(--white); }
+.closing-side.after .illust-fill { fill: var(--white); }
+.closing-side.after .illust-text { fill: var(--white); }
+.closing-side.after .illust-base { fill: rgba(245,245,240,0.25); stroke: var(--white); }
+.closing-side.after .illust-white { fill: var(--black); stroke: var(--white); }
+.closing-side.after .illust-blind { stroke: var(--white); }
+.closing-side.after .illust-ray { stroke: var(--white); }
+
+::selection { background: var(--black); color: var(--white); }
+
+@media (max-width: 720px) {
+  .article-root { padding: 0 16px 60px; }
+  .topbar { margin: 0 -16px; padding: 12px 16px; font-size: 10px; }
+  .hero { padding: 36px 0 24px; }
+  .hero-transition { grid-template-columns: 1fr; }
+  .hero-trans-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .takeaway { padding: 24px 20px; }
+  .takeaway-cards { grid-template-columns: 1fr; }
+  .widget { padding: 18px 14px; }
+  .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
+  .value-row { grid-template-columns: 1fr; }
+  .pillars[data-count="3"], .pillars[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
+  .compare-grid { grid-template-columns: 1fr; }
+  .group-diagram { grid-template-columns: 1fr; }
+  .spec-grid { grid-template-columns: repeat(2, 1fr); }
+  .spec-item:nth-child(2) { border-right: none; }
+  .spec-item:nth-child(1), .spec-item:nth-child(2) { border-bottom: 1px solid rgba(245, 245, 240, 0.2); }
+  .panel-header, .compare-col-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .keyphrase-block { grid-template-columns: 48px 1fr; }
+  .keyphrase-source { display: none; }
+  .keyphrase-mark { font-size: 22px; }
+  .concern-card { grid-template-columns: 60px 1fr; }
+  .concern-stats { grid-template-columns: 1fr; }
+  .before-after, .closing-grid { grid-template-columns: 1fr; }
+  .ba-arrow, .closing-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .article-section { margin-bottom: 60px; }
+}
+</style>
+</head>
+<body>
+
+<div class="article-root">
+
+  <header class="topbar">
+    <a class="brand" href="https://adaptdesign.jp/pixelstomotors" target="_blank" rel="noopener noreferrer"><span class="brand-dot"></span>Pixels to Motors</a>
+    <a class="day-tag" href="https://adaptdesign.jp/pixelstomotors/record/setting-up-the-side-camera" target="_blank" rel="noopener noreferrer">DAY 192</a>
+  </header>
+
+  <section class="hero">
+    <div class="hero-label">
+      <span>mechArm 270 Pi</span>
+      <span>動的追従の限界を探る</span>
+      <span>Log#10</span>
+    </div>
+    <h1>視点を増やす日 ── 設計判断とiPhone 2台体制の物理構築</h1>
+
+    <div class="hero-transition">
+      <div class="hero-trans-col from">
+        <div class="step">FROM / Log #9</div>
+        <div class="label">視差問題の浮上</div>
+        <svg class="illust hero-illust" viewBox="0 0 300 88" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mat -->
+          <line class="illust-line-bold" x1="40" y1="72" x2="260" y2="72"/>
+          <!-- Arm base -->
+          <rect class="illust-base" x="130" y="56" width="32" height="16"/>
+          <!-- Arm link -->
+          <line class="illust-line-bold" x1="146" y1="56" x2="146" y2="36"/>
+          <line class="illust-line-bold" x1="146" y1="36" x2="186" y2="36"/>
+          <!-- Gripper -->
+          <rect class="illust-white" x="180" y="32" width="14" height="10"/>
+          <!-- Block -->
+          <rect class="illust-fill" x="208" y="64" width="10" height="8"/>
+          <!-- Camera (TOP) -->
+          <rect class="illust-white" x="120" y="6" width="52" height="14" rx="1"/>
+          <text class="illust-text label" x="146" y="16" text-anchor="middle">TOP</text>
+          <!-- Camera ray (slanted) -->
+          <line class="illust-ray" x1="146" y1="20" x2="186" y2="36"/>
+          <line class="illust-ray" x1="146" y1="20" x2="213" y2="64"/>
+          <!-- Blind zone indicator -->
+          <text class="illust-text" x="40" y="84">BLIND: Y / 水平</text>
+        </svg>
+      </div>
+      <div class="hero-trans-arrow">→</div>
+      <div class="hero-trans-col to">
+        <div class="step">TO / Log #10</div>
+        <div class="label">視点を増やす</div>
+        <svg class="illust hero-illust" viewBox="0 0 300 88" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mat -->
+          <line class="illust-line-bold" x1="40" y1="72" x2="260" y2="72"/>
+          <!-- Arm base -->
+          <rect class="illust-base" x="130" y="56" width="32" height="16"/>
+          <!-- Arm link -->
+          <line class="illust-line-bold" x1="146" y1="56" x2="146" y2="36"/>
+          <line class="illust-line-bold" x1="146" y1="36" x2="186" y2="36"/>
+          <!-- Gripper -->
+          <rect class="illust-white" x="180" y="32" width="14" height="10"/>
+          <!-- Block -->
+          <rect class="illust-fill" x="208" y="64" width="10" height="8"/>
+          <!-- Camera (TOP) -->
+          <rect class="illust-white" x="120" y="6" width="52" height="14" rx="1"/>
+          <text class="illust-text label" x="146" y="16" text-anchor="middle">TOP</text>
+          <line class="illust-ray" x1="146" y1="20" x2="186" y2="36"/>
+          <!-- Camera (SIDE - new) -->
+          <rect class="illust-white" x="246" y="58" width="40" height="14" rx="1"/>
+          <text class="illust-text label" x="266" y="68" text-anchor="middle">SIDE</text>
+          <line class="illust-ray" x1="246" y1="65" x2="200" y2="40"/>
+          <!-- Coverage indicator -->
+          <text class="illust-text" x="40" y="84">FULL: X / Y / Z</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="takeaway">
+    <div class="takeaway-label">💡 Key Takeaway ── 本日の達成</div>
+    <div class="takeaway-cards">
+      <div class="takeaway-card">
+        <div class="num">01 / 設計</div>
+        <div class="title">設置位置の選定</div>
+        <div class="detail">マット手前 / 水平視線 / レンズ高さ ≈ マット面の B案を採用</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">02 / 運動学</div>
+        <div class="title">γ-lookup逆引き</div>
+        <div class="detail">既存FK scanに姿勢列を事後計算で追加、平行スライドを解く</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">03 / 物理</div>
+        <div class="title">2台カメラ並列</div>
+        <div class="detail">Iriun + Continuity Camera で2台を独立デバイス化</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 01 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">01</span><span class="section-label">起点</span></div>
+    <h2 class="section-heading">Log#9で何が見えていたか</h2>
+
+    <div class="widget">
+      <div class="widget-label">設計思想の転換</div>
+      <h3 class="widget-heading">段階分け追従 → コマ撮り連続追従</h3>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-header"><span>旧設計思想</span><span class="verdict">破棄</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">構造</span>APPROACH → DESCEND → refine</li>
+              <li><span class="item-label">駆動</span>停止 → 観察 → 計算 → 動作</li>
+              <li><span class="item-label">姿勢</span>3関節同方向リーチ伸縮</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col adopted">
+          <div class="compare-col-header"><span>新設計思想</span><span class="verdict">採用 ★</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">構造</span>段階分けせず連続制御</li>
+              <li><span class="item-label">駆動</span>動作中も観察・動作を並行</li>
+              <li><span class="item-label">姿勢</span>グリッパー水平・高さ一定</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">同時浮上した3つの要件</div>
+      <h3 class="widget-heading">Log#10のスコープを規定する要件群</h3>
+      <div class="cards-3">
+        <div class="card filled">
+          <div class="card-label">要件 01 / 視差</div>
+          <div class="card-name">上カメラは斜め視点</div>
+          <div class="card-detail">高さが変わるとTIP画面位置に視差。Log#8「TIP_X 61.4mm シフト」の正体</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">要件 02 / 制御</div>
+          <div class="card-name">コマ撮り連続追従</div>
+          <div class="card-detail">Log#4で部分実装。姿勢遷移の最中も追従し続ける徹底が必要</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">要件 03 / 運動学</div>
+          <div class="card-name">平行スライド</div>
+          <div class="card-detail">j4も含めた姿勢拘束付きの運動学が必要</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="value-row">
+      <div class="value-card struck">
+        <div class="v-label">Log#9 実測値</div>
+        <div class="v-num">4.786</div>
+        <div class="v-unit">mm / deg</div>
+        <div class="v-tag">DISCARDED</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">この値の正体</div>
+        <div class="v-num" style="font-size: 14px; padding: 8px 0;">リーチ伸縮の感度</div>
+        <div class="v-tag">NOT 平行スライド</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">必要な新値</div>
+        <div class="v-num" style="font-size: 14px; padding: 8px 0;">平行スライドの感度</div>
+        <div class="v-tag">TODO</div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">上カメラだけで<br>高さ・水平の検証はできない</div>
+      </div>
+      <div class="keyphrase-source">Log #9<br>引き継ぎ書</div>
+    </div>
+  </section>
+
+  <!-- ════ Section 02 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">02</span><span class="section-label">設置設計</span></div>
+    <h2 class="section-heading">横カメラの設置位置 ── 3案を1案に絞る</h2>
+
+    <div class="widget">
+      <div class="widget-label">横カメラの主目的</div>
+      <h3 class="widget-heading">何を見るために置くのか</h3>
+      <div class="cards-3">
+        <div class="card filled"><div class="card-label">目的 01</div><div class="card-name">Y が一定であるか</div><div class="card-detail">平行スライド時の高さ検証</div></div>
+        <div class="card filled"><div class="card-label">目的 02</div><div class="card-name">水平姿勢</div><div class="card-detail">グリッパーが傾いていないか</div></div>
+        <div class="card filled"><div class="card-label">目的 03</div><div class="card-name">TIP軌跡が直線か</div><div class="card-detail">x / z 平面での経路検証</div></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">設置位置の比較</div>
+      <h3 class="widget-heading">A / B / C ── どこに置けば何が見えるか</h3>
+
+      <div class="scene-wrap">
+        <svg class="scene-svg" viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+          <text x="20" y="20" font-family="IBM Plex Mono" font-size="9" fill="#999">TOP-DOWN VIEW</text>
+          <rect class="mat-rect" x="200" y="80" width="280" height="180"/>
+          <text x="340" y="175" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#999">MAT  620 × 450 mm</text>
+          <rect class="arm-base" x="320" y="62" width="40" height="20"/>
+          <text x="340" y="56" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#444">ARM BASE</text>
+          <rect class="block-marker" x="330" y="244" width="14" height="14"/>
+          <text x="337" y="274" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#444">BLOCK</text>
+          <g class="scene-group cam-group" data-axis="A">
+            <rect class="cam-marker" x="110" y="158" width="48" height="24" rx="2"/>
+            <text class="cam-tag" x="134" y="174" text-anchor="middle">A</text>
+            <rect class="cam-marker" x="522" y="158" width="48" height="24" rx="2"/>
+            <text class="cam-tag" x="546" y="174" text-anchor="middle">A</text>
+            <path class="cam-ray" d="M 160 170 L 200 170"/>
+            <path class="cam-ray" d="M 520 170 L 480 170"/>
+          </g>
+          <g class="scene-group cam-group" data-axis="B">
+            <rect class="cam-marker" x="305" y="288" width="70" height="24" rx="2"/>
+            <text class="cam-tag" x="340" y="304" text-anchor="middle">B</text>
+            <path class="cam-ray" d="M 340 287 L 340 260"/>
+          </g>
+          <g class="scene-group cam-group" data-axis="C">
+            <rect class="cam-marker" x="305" y="22" width="70" height="24" rx="2"/>
+            <text class="cam-tag" x="340" y="38" text-anchor="middle">C</text>
+            <path class="cam-ray" d="M 340 47 L 340 62"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="A"><div class="pillar-axis">A</div><div class="pillar-name">左右脇</div></div>
+        <div class="pillar" data-axis="B"><div class="pillar-axis">B</div><div class="pillar-name">手前側</div></div>
+        <div class="pillar" data-axis="C"><div class="pillar-axis">C</div><div class="pillar-name">奥側</div></div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>案を選択</div>
+
+      <div class="panel" data-axis="A">
+        <div class="panel-header"><span>A ── マット左右脇</span><span class="verdict">不採用</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card"><div class="card-label">見える方向</div><div class="card-name">X + Y</div></div>
+            <div class="card"><div class="card-label">グリッパー</div><div class="card-name">△ 肩・肘で隠れる</div></div>
+            <div class="card"><div class="card-label">上カメラ映り込み</div><div class="card-name">△ 視野内</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="B">
+        <div class="panel-header"><span>B ── マット手前側</span><span class="verdict">採用 ★</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card filled"><div class="card-label">見える方向</div><div class="card-name">Z + Y</div></div>
+            <div class="card filled"><div class="card-label">グリッパー</div><div class="card-name">◎ 常に最前列</div></div>
+            <div class="card filled"><div class="card-label">上カメラ映り込み</div><div class="card-name">◎ 俯瞰の死角</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="C">
+        <div class="panel-header"><span>C ── マット奥側</span><span class="verdict">不採用</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card"><div class="card-label">見える方向</div><div class="card-name">Z + Y</div></div>
+            <div class="card"><div class="card-label">グリッパー</div><div class="card-name">✕ ベースに隠れる</div></div>
+            <div class="card"><div class="card-label">上カメラ映り込み</div><div class="card-name">◎ 死角</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <div class="spec-block-header">
+        <span class="stamp">B案 仕様確定</span>
+        <span class="title">マット手前 / 水平視線</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-icon">⟷</div>
+          <div class="spec-key">位置</div>
+          <div class="spec-value">30〜50 cm</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">↕</div>
+          <div class="spec-key">レンズ高さ</div>
+          <div class="spec-value">マット ±50 mm</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">→</div>
+          <div class="spec-key">視線</div>
+          <div class="spec-value">水平</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⊥</div>
+          <div class="spec-key">固定</div>
+          <div class="spec-value">卓上三脚</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 03 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">03</span><span class="section-label">運動学</span></div>
+    <h2 class="section-heading">平行スライド運動学 ── 制約条件と解法</h2>
+
+    <div class="widget">
+      <div class="widget-label">グリッパーの掴み方</div>
+      <h3 class="widget-heading">上から掴む vs 横から掴む</h3>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-header"><span>上から掴む</span><span class="verdict">不採用</span></div>
+          <div class="grip-illust-wrap">
+            <svg class="illust grip-illust" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+              <!-- Block (24mm cube) -->
+              <rect class="illust-white" x="86" y="92" width="48" height="36"/>
+              <line class="illust-dim" x1="86" y1="135" x2="134" y2="135"/>
+              <text class="illust-dim-text" x="110" y="134" text-anchor="middle" style="font-size:9px">24 mm</text>
+              <!-- Gripper body (vertical) -->
+              <rect class="illust-white" x="86" y="20" width="48" height="22"/>
+              <text class="illust-text label" x="110" y="34" text-anchor="middle" style="font-size:8.5px">GRIPPER</text>
+              <!-- Fingers (going down) -->
+              <line class="illust-line-bold" x1="93" y1="42" x2="93" y2="76"/>
+              <line class="illust-line-bold" x1="127" y1="42" x2="127" y2="76"/>
+              <!-- pitch angle indicator -->
+              <path class="illust-line" d="M 150 40 L 165 40 L 165 55"/>
+              <text class="illust-text label" x="170" y="48">pitch ≈ 90°</text>
+              <!-- Approach arrow -->
+              <line class="illust-line" x1="110" y1="76" x2="110" y2="88" marker-end="url(#arrowDown)"/>
+              <defs>
+                <marker id="arrowDown" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto">
+                  <path d="M 0 0 L 3 5 L 6 0 Z" fill="currentColor"/>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">姿勢</span>フィンガー軸 = 重力方向</li>
+              <li><span class="item-label">先端</span>真下 (pitch ≈ 90°)</li>
+              <li><span class="item-label">適合性</span>立方体ブロックの上面が小さく不向き</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col adopted">
+          <div class="compare-col-header"><span>横から掴む</span><span class="verdict">採用 ★</span></div>
+          <div class="grip-illust-wrap">
+            <svg class="illust grip-illust" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+              <!-- Mat surface -->
+              <line class="illust-line-bold" x1="10" y1="128" x2="210" y2="128"/>
+              <!-- Block (24mm cube) -->
+              <rect class="illust-white" x="130" y="92" width="36" height="36"/>
+              <line class="illust-dim" x1="170" y1="92" x2="170" y2="128"/>
+              <text class="illust-dim-text" x="175" y="115" style="font-size:9px">24</text>
+              <!-- Gripper body (horizontal, approaching from left) -->
+              <rect class="illust-white" x="40" y="98" width="38" height="24"/>
+              <text class="illust-text label" x="59" y="113" text-anchor="middle" style="font-size:8px">GRIP</text>
+              <!-- Fingers (going right, horizontal) -->
+              <line class="illust-line-bold" x1="78" y1="104" x2="120" y2="104"/>
+              <line class="illust-line-bold" x1="78" y1="116" x2="120" y2="116"/>
+              <!-- pitch angle indicator -->
+              <text class="illust-text label" x="40" y="88">pitch ≈ 0°</text>
+              <!-- TIP Y = 12mm dimension -->
+              <line class="illust-blind" x1="125" y1="110" x2="200" y2="110"/>
+              <line class="illust-dim" x1="195" y1="110" x2="195" y2="128"/>
+              <text class="illust-dim-text" x="200" y="122" style="font-size:9px">Y=12</text>
+              <!-- Approach arrow -->
+              <line class="illust-line" x1="22" y1="110" x2="38" y2="110" marker-end="url(#arrowRight)"/>
+              <defs>
+                <marker id="arrowRight" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                  <path d="M 0 0 L 5 3 L 0 6 Z" fill="currentColor"/>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">姿勢</span>フィンガー軸 = 水平</li>
+              <li><span class="item-label">先端</span>前方 (pitch ≈ 0°)</li>
+              <li><span class="item-label">適合性</span>側面から確実に掴める</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="value-row">
+      <div class="value-card">
+        <div class="v-label">赤ブロック高さ</div>
+        <div class="v-num">24</div>
+        <div class="v-unit">mm</div>
+        <div class="v-tag">INPUT</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">TIP目標 Y</div>
+        <div class="v-num">12</div>
+        <div class="v-unit">mm (中心高さ)</div>
+        <div class="v-tag">TARGET</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">Log#9 DESCEND姿勢</div>
+        <div class="v-num" style="font-size: 14px; padding: 6px 0;">J1=87.74<br>J2=−10.0</div>
+        <div class="v-tag">CONFIRMED</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">運動学の制約条件</div>
+      <h3 class="widget-heading">3つの制約を同時に満たす</h3>
+      <div class="cards-3">
+        <div class="card filled"><div class="card-label">制約 01</div><div class="card-name">TIPの y = 12mm 一定</div></div>
+        <div class="card filled"><div class="card-label">制約 02</div><div class="card-name">フィンガー軸 = 水平</div></div>
+        <div class="card filled"><div class="card-label">制約 03</div><div class="card-name">TIPの x, z のみ変化</div></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">6軸を3グループに分解</div>
+      <h3 class="widget-heading">関節の役割分担 ── ②が平行スライドの本体</h3>
+      <div class="group-diagram">
+        <div class="group-col">
+          <div class="group-col-num">GROUP ①</div>
+          <div class="group-col-title">yaw合わせ</div>
+          <div class="group-col-joints">j0</div>
+          <div class="group-col-tags"><span class="gtag">ベース回転</span></div>
+        </div>
+        <div class="group-col primary">
+          <div class="group-col-num">GROUP ② ★ 本体</div>
+          <div class="group-col-title">リーチ + 高さ保持</div>
+          <div class="group-col-joints">j1 + j2 + j3</div>
+          <div class="group-col-tags">
+            <span class="gtag">3関節協調</span>
+            <span class="gtag">手首傾き相殺</span>
+            <span class="gtag">(距離, y) 制御</span>
+          </div>
+        </div>
+        <div class="group-col">
+          <div class="group-col-num">GROUP ③</div>
+          <div class="group-col-title">フィンガー姿勢</div>
+          <div class="group-col-joints">j4 + j5</div>
+          <div class="group-col-tags">
+            <span class="gtag">水平挟み</span>
+            <span class="gtag">垂直挟み</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">設計上の懸念</div>
+        <div class="concern-title">マット面干渉</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">TIP目標Y</div><div class="v">12 mm</div></div>
+          <div class="concern-stat"><div class="k">マット面まで</div><div class="v">VERY CLOSE</div></div>
+          <div class="concern-stat"><div class="k">干渉リスク</div><div class="v">グリッパー底</div></div>
+        </div>
+        <div class="concern-action">→ 横カメラ設置直後の最初のジョブ</div>
+        <div class="concern-illust-wrap">
+          <svg class="illust concern-illust" viewBox="0 0 460 130" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="hatchDanger" patternUnits="userSpaceOnUse" width="5" height="5">
+                <line x1="0" y1="0" x2="5" y2="5" class="illust-dim" stroke-width="0.7"/>
+              </pattern>
+              <marker id="arrowWarn" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+                <path d="M 0 0 L 5 3 L 0 6 Z" fill="#0d0d0d"/>
+              </marker>
+            </defs>
+            <!-- Mat surface -->
+            <line class="illust-line-bold" x1="20" y1="100" x2="440" y2="100"/>
+            <rect fill="url(#hatchDanger)" x="20" y="100" width="420" height="16" opacity="0.5"/>
+            <text class="illust-text" x="230" y="125" text-anchor="middle">MAT SURFACE</text>
+            <!-- Gripper body -->
+            <rect class="illust-white" x="120" y="46" width="50" height="26"/>
+            <text class="illust-text label" x="145" y="61" text-anchor="middle" style="font-size:8.5px">GRIPPER BASE</text>
+            <!-- Fingers -->
+            <line class="illust-line-bold" x1="170" y1="54" x2="240" y2="54"/>
+            <line class="illust-line-bold" x1="170" y1="68" x2="240" y2="68"/>
+            <!-- Gripper bottom dashed extension -->
+            <line class="illust-blind" x1="120" y1="72" x2="340" y2="72"/>
+            <!-- Block -->
+            <rect class="illust-white" x="245" y="64" width="22" height="36"/>
+            <text class="illust-text" x="256" y="84" text-anchor="middle" style="font-size:8px;font-weight:700">24mm</text>
+            <!-- TIP Y = 12mm dimension line -->
+            <line class="illust-dim" x1="300" y1="72" x2="300" y2="100"/>
+            <line class="illust-dim" x1="295" y1="72" x2="305" y2="72"/>
+            <line class="illust-dim" x1="295" y1="100" x2="305" y2="100"/>
+            <text class="illust-dim-text" x="310" y="89">TIP Y = 12mm</text>
+            <!-- Warning callout -->
+            <text class="illust-text label" x="20" y="35" style="font-size:10px">⚠ GRIPPER 底面が</text>
+            <text class="illust-text label" x="20" y="48" style="font-size:10px">  マット面に干渉?</text>
+            <line class="illust-line" x1="100" y1="50" x2="125" y2="68" marker-end="url(#arrowWarn)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 04 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">04</span><span class="section-label">解法選択</span></div>
+    <h2 class="section-heading">解法の選択 ── γ-lookup逆引きが最適</h2>
+
+    <div class="widget">
+      <div class="widget-label">3つの解法</div>
+      <h3 class="widget-heading">α / β / γ ── どれを採用するか</h3>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="alpha"><div class="pillar-axis">α</div><div class="pillar-name">解析的IK</div></div>
+        <div class="pillar" data-axis="beta"><div class="pillar-axis">β</div><div class="pillar-name">数値解</div></div>
+        <div class="pillar" data-axis="gamma"><div class="pillar-axis">γ</div><div class="pillar-name">lookup逆引き</div></div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>解法を選択</div>
+
+      <div class="panel" data-axis="alpha">
+        <div class="panel-header"><span>α ── 解析的IK</span><span class="verdict">不採用</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card"><div class="card-label">実装難度</div><div class="card-name">高</div></div>
+            <div class="card"><div class="card-label">既存資産</div><div class="card-name">FK scan 使わず</div></div>
+            <div class="card"><div class="card-label">リスク</div><div class="card-name">DH公式値不信</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="beta">
+        <div class="panel-header"><span>β ── 数値解 (ヤコビアン疑似逆)</span><span class="verdict">不採用</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card"><div class="card-label">実装難度</div><div class="card-name">中</div></div>
+            <div class="card"><div class="card-label">既存資産</div><div class="card-name">FK scan 使わず</div></div>
+            <div class="card"><div class="card-label">リスク</div><div class="card-name">反復計算が重い</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="gamma">
+        <div class="panel-header"><span>γ ── lookup逆引き (FK scan 512,087点)</span><span class="verdict">採用 ★</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card filled"><div class="card-label">実装難度</div><div class="card-name">低</div></div>
+            <div class="card filled"><div class="card-label">既存資産</div><div class="card-name">既存lookupの拡張</div></div>
+            <div class="card filled"><div class="card-label">理論的根拠</div><div class="card-name">P008 と整合</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>実機キャリブ済</span></span>
+            <span class="tag solid"><span>机上DHより誤差小</span></span>
+            <span class="tag solid"><span>P2M コアと整合</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">γ-lookup逆引きの3段階フィルタ</div>
+      <h3 class="widget-heading">512,087点 → 平行スライドの1点へ</h3>
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">F1</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>第1フィルタ ── ee_y ≈ 12mm (±2mm)</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">→ 数千〜数万点</span>
+              <span class="tag">最大削減</span>
+              <span class="tag">高さ拘束</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">F2</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>第2フィルタ ── |gripper_pitch_world| ≤ ε (±5°)</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">水平姿勢</span>
+              <span class="tag">pitch ≈ j1+j2+j3</span>
+              <span class="tag">事後計算で追加</span>
+              <span class="tag">fk_scan_with_pose.csv</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">F3</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>第3フィルタ ── 目標 (ee_x, ee_z) に最近傍</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">→ 1点確定</span>
+              <span class="tag">j0..j5 取得</span>
+              <span class="tag">send_angles() へ</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="funnel-block">
+      <div class="funnel-label">γ-lookup 絞り込みプロセス</div>
+      <div class="funnel-heading">512,087 → 1 への漸減</div>
+      <svg class="illust funnel-illust" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="dotPattern" patternUnits="userSpaceOnUse" width="5" height="5">
+            <circle cx="2.5" cy="2.5" r="0.55" fill="#0d0d0d"/>
+          </pattern>
+        </defs>
+        <!-- Top layer: 512,087 points -->
+        <rect x="30" y="14" width="440" height="44" class="illust-line" fill="url(#dotPattern)"/>
+        <rect x="30" y="14" width="440" height="44" class="illust-white" fill-opacity="0"/>
+        <text x="250" y="42" text-anchor="middle" font-family="IBM Plex Mono" font-size="15" font-weight="700">512,087 points</text>
+        <!-- F1 funnel -->
+        <polygon points="30,60 470,60 390,100 110,100" class="illust-white"/>
+        <text x="250" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" font-weight="700">F1: ee_y ≈ 12mm (±2mm)</text>
+        <!-- Mid layer: 数千〜数万点 -->
+        <rect x="110" y="102" width="280" height="30" class="illust-white"/>
+        <text x="250" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" font-weight="700">数千〜数万 points</text>
+        <!-- F2 funnel -->
+        <polygon points="110,132 390,132 320,172 180,172" class="illust-white"/>
+        <text x="250" y="156" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" font-weight="700">F2: |pitch_world| ≤ ε</text>
+        <!-- Mid layer 2: 数十点 -->
+        <rect x="180" y="174" width="140" height="26" class="illust-white"/>
+        <text x="250" y="192" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" font-weight="700">数十 points</text>
+        <!-- F3 funnel -->
+        <polygon points="180,200 320,200 270,240 230,240" class="illust-white"/>
+        <text x="250" y="225" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" font-weight="700">F3: 最近傍 (ee_x, ee_z)</text>
+        <!-- Bottom: 1 point -->
+        <rect x="222" y="242" width="56" height="34" fill="#0d0d0d" stroke="#0d0d0d" stroke-width="2"/>
+        <text x="250" y="265" text-anchor="middle" font-family="IBM Plex Mono" font-size="18" font-weight="700" fill="#f5f5f0">1</text>
+        <text x="250" y="294" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#444">→ j0..j5 を send_angles()</text>
+      </svg>
+    </div>
+
+    <div class="value-row">
+      <div class="value-card">
+        <div class="v-label">残課題 01</div>
+        <div class="v-num" style="font-size: 13px; padding: 8px 0;">符号の確定</div>
+        <div class="v-tag">j1+j2+j3 ?</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">残課題 02</div>
+        <div class="v-num" style="font-size: 13px; padding: 8px 0;">水平の実機キャリブ</div>
+        <div class="v-tag">オフセット補正</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">FK scan総点数</div>
+        <div class="v-num">512,087</div>
+        <div class="v-unit">points</div>
+        <div class="v-tag">READY</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 05 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">05</span><span class="section-label">キャリブ</span></div>
+    <h2 class="section-heading">横カメラのキャリブ計画 ── アームをキャリブ装置として使う</h2>
+
+    <div class="widget">
+      <div class="widget-label">キャリブの3層構造</div>
+      <h3 class="widget-heading">層1 / 層2 / 層3 ── どこに労力を割くか</h3>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="layer1"><div class="pillar-axis">L1</div><div class="pillar-name">内部</div></div>
+        <div class="pillar" data-axis="layer2"><div class="pillar-axis">L2</div><div class="pillar-name">外部</div></div>
+        <div class="pillar" data-axis="layer3"><div class="pillar-axis">L3</div><div class="pillar-name">統合</div></div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>層を選択</div>
+
+      <div class="panel" data-axis="layer1">
+        <div class="panel-header"><span>L1 ── 内部パラメータ (歪み補正)</span><span class="verdict">後回し</span></div>
+        <div class="panel-body">
+          <div class="cards-2">
+            <div class="card"><div class="card-label">通常</div><div class="card-name">チェスボードキャリブ</div></div>
+            <div class="card filled"><div class="card-label">今回</div><div class="card-name">取らない</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>運動の整合性 &gt; 絶対精度</span></span>
+            <span class="tag">不足時に取得</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="layer2">
+        <div class="panel-header"><span>L2 ── 外部パラメータ (位置・向き)</span><span class="verdict">本丸</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card filled"><div class="card-label">手順 01</div><div class="card-name">既知姿勢に移動</div></div>
+            <div class="card filled"><div class="card-label">手順 02</div><div class="card-name">青マーカー検出</div></div>
+            <div class="card filled"><div class="card-label">手順 03</div><div class="card-name">多項式回帰</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>R2R2R と整合</span></span>
+            <span class="tag solid"><span>Unity真値 → リアル校正</span></span>
+            <span class="tag solid"><span>追加用具なし</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="layer3">
+        <div class="panel-header"><span>L3 ── 両カメラの統合</span><span class="verdict">仕組み化</span></div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card"><div class="card-label">X 左右</div><div class="card-name">x_top</div></div>
+            <div class="card"><div class="card-label">Y 高さ</div><div class="card-name">y_side</div></div>
+            <div class="card filled"><div class="card-label">Z 手前奥</div><div class="card-name">(z_top + z_side) / 2</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>Z 二重取り</span></span>
+            <span class="tag solid"><span>整合性チェック</span></span>
+            <span class="tag solid"><span>P008 の応用</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">アームそのものを<br>キャリブ装置として使う</div>
+      </div>
+      <div class="keyphrase-source">層 2<br>解き方</div>
+    </div>
+  </section>
+
+  <!-- ════ Section 06 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">06</span><span class="section-label">物理設置</span></div>
+    <h2 class="section-heading">物理設置のトラブル ── 仕様の落とし穴</h2>
+
+    <div class="widget">
+      <div class="widget-label">トラブルシュートの流れ</div>
+      <h3 class="widget-heading">Iriun単体不可 → 3代替案 → Continuity Camera採用</h3>
+
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">01</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>当初想定 ── Iriun単体で2台</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">PLAN</span>
+              <span class="tag">iPhone × 2 + Iriun</span>
+              <span class="tag">既存環境継続</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">02</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>失敗 ── プルダウン切替式</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">FAIL</span>
+              <span class="tag">single source only</span>
+              <span class="tag">公式表記が紛らわしい</span>
+              <span class="tag">多アプリ != 多デバイス</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">03</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>代替案検討 ── 3案を比較</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">EVAL</span>
+              <span class="tag">① Continuity Camera</span>
+              <span class="tag">② EpocCam</span>
+              <span class="tag">③ OBS Virtual</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">04</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>採用 ── Continuity Camera</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">DECIDE</span>
+              <span class="tag">macOS Ventura+</span>
+              <span class="tag">iOS 16+</span>
+              <span class="tag">iPhone XR+</span>
+              <span class="tag">追加コスト 0</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">05</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>有効化 ── OpenCV から並列認識</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">RESULT</span>
+              <span class="tag">Cam 0: 内蔵</span>
+              <span class="tag">Cam 1: 1920×1080</span>
+              <span class="tag">Cam 2: 1920×1080</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">落とし穴</div>
+        <div class="concern-title">カメラインデックスが起動順で入れ替わる</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">類似事故</div><div class="v">DAY153</div></div>
+          <div class="concern-stat"><div class="k">対策方針</div><div class="v">起動時判定</div></div>
+          <div class="concern-stat"><div class="k">実装</div><div class="v">DAY193 タスク</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 07 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">07</span><span class="section-label">役割転換</span></div>
+    <h2 class="section-heading">役割の入れ替え ── 当初想定からの転換</h2>
+
+    <div class="widget">
+      <div class="widget-label">カメラ役割の入れ替え</div>
+      <h3 class="widget-heading">当初想定 vs 最終構成</h3>
+
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-header"><span>当初想定 (Log#9引き継ぎ)</span><span class="verdict">改訂</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">上カメラ</span>既存iPhone (Iriun)</li>
+              <li><span class="item-label">横カメラ</span>iPhone 11 (Continuity)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col adopted">
+          <div class="compare-col-header"><span>最終構成 (現場で確定)</span><span class="verdict">採用 ★</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">上カメラ</span>iPhone 14 Pro Max (Continuity)</li>
+              <li><span class="item-label">横カメラ</span>iPhone 11 (Iriun)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="value-row">
+      <div class="value-card">
+        <div class="v-label">Continuity 相性</div>
+        <div class="v-num" style="font-size: 13px; padding: 8px 0;">新機種ほど◎</div>
+        <div class="v-tag">→ iPhone 14 Pro</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">Iriun 安定性</div>
+        <div class="v-num" style="font-size: 13px; padding: 8px 0;">古い機種でも安定</div>
+        <div class="v-tag">→ iPhone 11</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">割り当て原則</div>
+        <div class="v-num" style="font-size: 13px; padding: 8px 0;">純正は新機種に</div>
+        <div class="v-tag">RULE</div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">iriunカメラをiPhone11の方にして、<br>通常のカメラをiPhone14proに変更したよ。<br>こっちのほうがいいみたいだね。</div>
+      </div>
+      <div class="keyphrase-source">現場メモ</div>
+    </div>
+  </section>
+
+  <!-- ════ Section 08 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">08</span><span class="section-label">役割分担</span></div>
+    <h2 class="section-heading">2台のカメラの役割分担 ── どの軸を、どちらが見るか</h2>
+
+    <div class="widget">
+      <div class="widget-label">軸ごとの担当カメラ</div>
+      <h3 class="widget-heading">X / Y / Z ── どの軸をどちらのカメラが見るか</h3>
+
+      <div class="scene-wrap">
+        <svg class="scene-svg" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+          <line x1="80" y1="170" x2="600" y2="170" stroke="#0d0d0d" stroke-width="1.5"/>
+          <text x="340" y="190" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#444">MAT  620 × 450 mm</text>
+          <rect class="arm-base" x="320" y="120" width="40" height="50"/>
+          <rect class="arm-base" x="330" y="80" width="20" height="50"/>
+          <rect class="arm-base" x="320" y="60" width="40" height="30"/>
+          <text x="340" y="55" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#444">ARM</text>
+          <rect class="block-marker" x="220" y="158" width="14" height="12"/>
+          <text x="227" y="200" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#444">BLOCK</text>
+          <g class="scene-group cam-group" data-axis="x">
+            <rect class="cam-marker" x="310" y="14" width="60" height="22" rx="2"/>
+            <text class="cam-tag" x="340" y="29" text-anchor="middle">TOP</text>
+          </g>
+          <g class="scene-group cam-group" data-axis="y">
+            <rect class="cam-marker" x="40" y="155" width="40" height="22" rx="2"/>
+            <text class="cam-tag" x="60" y="170" text-anchor="middle">SIDE</text>
+          </g>
+          <g class="scene-group cam-group" data-axis="z">
+            <rect class="cam-marker" x="310" y="14" width="60" height="22" rx="2"/>
+            <text class="cam-tag" x="340" y="29" text-anchor="middle">TOP</text>
+            <rect class="cam-marker" x="40" y="155" width="40" height="22" rx="2"/>
+            <text class="cam-tag" x="60" y="170" text-anchor="middle">SIDE</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="x"><div class="pillar-axis">X</div><div class="pillar-name">左右</div></div>
+        <div class="pillar" data-axis="y"><div class="pillar-axis">Y</div><div class="pillar-name">高さ</div></div>
+        <div class="pillar" data-axis="z"><div class="pillar-axis">Z</div><div class="pillar-name">手前奥</div></div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>軸を選択</div>
+
+      <div class="panel" data-axis="x">
+        <div class="panel-header"><span>X 軸 ── 左右</span><span class="verdict">主担当: TOP</span></div>
+        <div class="panel-body">
+          <div class="cards-2">
+            <div class="card filled"><div class="card-label">TOP CAM</div><div class="card-name">主担当 ◎</div></div>
+            <div class="card"><div class="card-label">SIDE CAM</div><div class="card-name">担当外 ✕</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>Homography → mm</span></span>
+            <span class="tag solid"><span>上カメラ単独完結</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="y">
+        <div class="panel-header"><span>Y 軸 ── 高さ</span><span class="verdict">主担当: SIDE</span></div>
+        <div class="panel-body">
+          <div class="cards-2">
+            <div class="card"><div class="card-label">TOP CAM</div><div class="card-name">担当外 △</div></div>
+            <div class="card filled"><div class="card-label">SIDE CAM</div><div class="card-name">主担当 ◎</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>高さ一定の検証</span></span>
+            <span class="tag solid"><span>水平姿勢の確認</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="z">
+        <div class="panel-header"><span>Z 軸 ── 手前奥</span><span class="verdict">主担当: 両方 (二重取り)</span></div>
+        <div class="panel-body">
+          <div class="cards-2">
+            <div class="card filled"><div class="card-label">TOP CAM</div><div class="card-name">担当 ○</div></div>
+            <div class="card filled"><div class="card-label">SIDE CAM</div><div class="card-name">担当 ◎</div></div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>整合性チェック</span></span>
+            <span class="tag solid"><span>キャリブ診断</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">横カメラ設置直後の答え合わせ</div>
+      <h3 class="widget-heading">机上検討の3つの懸念が一発で解消</h3>
+      <div class="cards-3">
+        <div class="card filled">
+          <div class="card-label">答え合わせ 01</div>
+          <div class="card-name">マット面干渉なし</div>
+          <div class="card-detail">底部とマット面に明確な隙間。TIP=12mmで干渉せず</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">答え合わせ 02</div>
+          <div class="card-name">青マーカー検出可</div>
+          <div class="card-detail">上カメラの<code>detect_tip_blue_geometry()</code>関数を流用可</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">答え合わせ 03</div>
+          <div class="card-name">DESCEND直前を捉える</div>
+          <div class="card-detail">上カメラの視差で見えなかった領域を真横から追える</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Section 09 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">09</span><span class="section-label">次セッション</span></div>
+    <h2 class="section-heading">DAY193以降 ── 8ステップで PICK実機検証へ</h2>
+
+    <div class="widget">
+      <div class="widget-label">DAY193以降の実装順序</div>
+      <h3 class="widget-heading">8ステップで PICK実機検証へ向かう</h3>
+
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">01</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>iPhone 11 の物理固定</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">HARDWARE</span>
+              <span class="tag">卓上三脚</span>
+              <span class="tag">レンズ高さ再現</span>
+              <span class="tag">水平視線</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">02</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>カメラインデックスの自動検出</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">SOFTWARE</span>
+              <span class="tag">Iriun + Continuity 両対応</span>
+              <span class="tag">起動時判定</span>
+              <span class="tag">DAY153の事故防止</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">03</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>横カメラ単体テスト</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">VERIFY</span>
+              <span class="tag">青マーカー検出</span>
+              <span class="tag">上カメラ関数流用</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">04</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>キャリブスクリプト作成</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">SOFTWARE</span>
+              <span class="tag">FK scan 50〜100姿勢</span>
+              <span class="tag">両カメラ pixel記録</span>
+              <span class="tag">CSV保存</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">05</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>pixel ↔ (z, y) 変換式の作成</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">SOFTWARE</span>
+              <span class="tag">多項式回帰</span>
+              <span class="tag">scipy / numpy</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">06</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>整合性検証</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">VERIFY</span>
+              <span class="tag">z_top vs z_side</span>
+              <span class="tag">統計的評価</span>
+              <span class="tag">ズレ領域の原因特定</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">07</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span><code>visual_servo_pick.py</code> リファクタ</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">SOFTWARE</span>
+              <span class="tag">平行スライド対応</span>
+              <span class="tag">両カメラ統合</span>
+              <span class="tag">γ-lookup組み込み</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">08</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title"><span>PICK実機検証</span><span class="toggle-mark">+</span></div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">VERIFY</span>
+              <span class="tag">水平確認</span>
+              <span class="tag">Y=12mm安定</span>
+              <span class="tag">爪が届く</span>
+              <span class="tag">掴める</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">本日の総括</div>
+      <h3 class="widget-heading">破棄したもの / 立ち上がる新構造</h3>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-header"><span>破棄したもの</span><span class="verdict">Log#9で否定</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">追従</span>段階分け追従</li>
+              <li><span class="item-label">運動学</span>3関節同方向リーチ伸縮</li>
+              <li><span class="item-label">数値</span>Z係数 4.786 mm/deg</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col adopted">
+          <div class="compare-col-header"><span>立ち上がる新構造</span><span class="verdict">Log#10で確立 ★</span></div>
+          <div class="compare-col-body">
+            <ul class="compare-list">
+              <li><span class="item-label">追従</span>コマ撮り連続追従</li>
+              <li><span class="item-label">運動学</span>γ-lookup逆引き平行スライド</li>
+              <li><span class="item-label">視点</span>上 + 横の両カメラ統合</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Closing as Before/After ════ -->
+  <div class="closing-block">
+    <div class="closing-label">本日の結論 ── 横カメラを置く前と後では、見える世界が違う</div>
+    <div class="closing-grid">
+      <div class="closing-side before">
+        <div class="when">BEFORE</div>
+        <div class="world">1 CAMERA</div>
+        <svg class="illust closing-illust" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mat -->
+          <line class="illust-line-bold" x1="20" y1="110" x2="220" y2="110"/>
+          <!-- Arm base -->
+          <rect class="illust-base" x="105" y="92" width="30" height="18"/>
+          <line class="illust-line-bold" x1="120" y1="92" x2="120" y2="68"/>
+          <line class="illust-line-bold" x1="120" y1="68" x2="155" y2="68"/>
+          <rect class="illust-white" x="150" y="64" width="12" height="10"/>
+          <rect class="illust-fill" x="175" y="102" width="10" height="8"/>
+          <!-- Camera TOP only -->
+          <rect class="illust-white" x="100" y="14" width="40" height="14" rx="1"/>
+          <text class="illust-text label" x="120" y="24" text-anchor="middle">TOP</text>
+          <line class="illust-ray" x1="120" y1="28" x2="155" y2="68"/>
+          <line class="illust-ray" x1="120" y1="28" x2="180" y2="106"/>
+          <!-- Blind zone -->
+          <rect class="illust-blind" x="140" y="46" width="58" height="34"/>
+          <text class="illust-text" x="169" y="62" text-anchor="middle" style="font-size:7.5px;font-weight:700">Y / 水平</text>
+          <text class="illust-text" x="169" y="73" text-anchor="middle" style="font-size:7.5px;font-weight:700">BLIND</text>
+        </svg>
+        <div class="seen">
+          <div class="seen-item"><span>X 左右</span><span>○</span></div>
+          <div class="seen-item"><span>Y 高さ</span><span>✕</span></div>
+          <div class="seen-item"><span>Z 手前奥</span><span>△ 視差</span></div>
+          <div class="seen-item"><span>水平姿勢</span><span>✕</span></div>
+        </div>
+      </div>
+      <div class="closing-arrow">→</div>
+      <div class="closing-side after">
+        <div class="when">AFTER</div>
+        <div class="world">2 CAMERAS</div>
+        <svg class="illust closing-illust" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mat -->
+          <line class="illust-line-bold" x1="20" y1="110" x2="220" y2="110"/>
+          <!-- Arm base -->
+          <rect class="illust-base" x="105" y="92" width="30" height="18"/>
+          <line class="illust-line-bold" x1="120" y1="92" x2="120" y2="68"/>
+          <line class="illust-line-bold" x1="120" y1="68" x2="155" y2="68"/>
+          <rect class="illust-white" x="150" y="64" width="12" height="10"/>
+          <rect class="illust-fill" x="175" y="102" width="10" height="8"/>
+          <!-- Camera TOP -->
+          <rect class="illust-white" x="100" y="14" width="40" height="14" rx="1"/>
+          <text class="illust-text label" x="120" y="24" text-anchor="middle">TOP</text>
+          <line class="illust-ray" x1="120" y1="28" x2="155" y2="68"/>
+          <!-- Camera SIDE (new) -->
+          <rect class="illust-white" x="200" y="96" width="34" height="14" rx="1"/>
+          <text class="illust-text label" x="217" y="106" text-anchor="middle">SIDE</text>
+          <line class="illust-ray" x1="200" y1="103" x2="162" y2="74"/>
+          <line class="illust-ray" x1="200" y1="103" x2="180" y2="106"/>
+          <!-- Coverage labels -->
+          <text class="illust-text" x="120" y="50" text-anchor="middle" style="font-size:7.5px;font-weight:700">X → TOP</text>
+          <text class="illust-text" x="195" y="78" text-anchor="middle" style="font-size:7.5px;font-weight:700">Y/Z → SIDE</text>
+        </svg>
+        <div class="seen">
+          <div class="seen-item"><span>X 左右</span><span>◎ TOP</span></div>
+          <div class="seen-item"><span>Y 高さ</span><span>◎ SIDE</span></div>
+          <div class="seen-item"><span>Z 手前奥</span><span>◎ 二重取り</span></div>
+          <div class="seen-item"><span>水平姿勢</span><span>◎ SIDE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>© ADAPT DESIGN / Pixels to Motors</div>
+    <div>UX × AI × ROBOTICS</div>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.widget').forEach(widget => {
+    const pillars = widget.querySelectorAll('.pillar');
+    if (pillars.length === 0) return;
+    const panels = widget.querySelectorAll('.panel');
+    const emptyPanel = widget.querySelector('.panel-empty');
+    const sceneGroups = widget.querySelectorAll('.scene-group');
+
+    pillars.forEach(p => {
+      p.addEventListener('click', () => {
+        const axis = p.dataset.axis;
+        pillars.forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        panels.forEach(panel => panel.classList.remove('active'));
+        const target = widget.querySelector(`.panel[data-axis="${axis}"]`);
+        if (target) target.classList.add('active');
+        if (emptyPanel) emptyPanel.style.display = 'none';
+        sceneGroups.forEach(g => {
+          g.classList.toggle('active', g.dataset.axis === axis);
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('.flow-step').forEach(step => {
+    step.addEventListener('click', () => step.classList.toggle('active'));
+  });
+</script>
+
+</body>
+</html>
