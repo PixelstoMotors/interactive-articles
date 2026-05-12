@@ -66,11 +66,6 @@ body {
   color: var(--black);
   margin-bottom: 28px;
 }
-.hero-pretitle .pretitle-sep {
-  display: inline-block;
-  margin: 0 8px;
-  opacity: 0.4;
-}
 .hero-label {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px; letter-spacing: 0.18em;
@@ -203,16 +198,15 @@ body {
   transition: transform 0.18s ease;
 }
 
-/* === Tags inline (for chapter-like info) === */
-.card-chapter {
-  display: inline-block;
-  padding: 2px 8px;
-  border: 1px solid currentColor;
-  font-size: 9.5px;
+/* === Loading / Error states === */
+.state-msg {
+  border: 1px dashed var(--gray-mid);
+  padding: 32px 20px;
+  text-align: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--gray-mid);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  margin-left: 4px;
 }
 
 /* === About === */
@@ -333,43 +327,11 @@ body {
   <section>
     <div class="section-marker">
       <span class="section-label">Record / 記録</span>
-      <span class="section-count">01 / 全1件</span>
+      <span class="section-count" id="section-count">読込中...</span>
     </div>
 
-    <div class="articles-grid">
-
-      <!-- ════ DAY 192 ════ -->
-      <a class="article-card" href="./setting-up-the-side-camera/">
-        <div class="card-meta">
-          <span class="card-day">DAY 192</span>
-          <span class="card-tag">デジタルツイン学習</span>
-          <span class="card-date">2026 / 05 / 07</span>
-        </div>
-        <div class="card-series">mechArm 270 Pi 動的追従の限界を探る ── Log #10</div>
-        <h2 class="card-title">視点を増やす日 ── 設計判断と iPhone 2台体制の物理構築</h2>
-        <div class="card-cta">
-          <span>Open Interactive</span>
-          <span class="card-cta-arrow">→</span>
-        </div>
-      </a>
-
-      <!-- 次の記事を追加する場合のテンプレ -->
-      <!--
-      <a class="article-card" href="./{slug}/">
-        <div class="card-meta">
-          <span class="card-day">DAY ###</span>
-          <span class="card-tag">カテゴリ</span>
-          <span class="card-date">YYYY / MM / DD</span>
-        </div>
-        <div class="card-series">シリーズタイトル ── Log #N</div>
-        <h2 class="card-title">記事タイトル</h2>
-        <div class="card-cta">
-          <span>Open Interactive</span>
-          <span class="card-cta-arrow">→</span>
-        </div>
-      </a>
-      -->
-
+    <div class="articles-grid" id="articles-grid">
+      <div class="state-msg">読込中...</div>
     </div>
   </section>
 
@@ -397,6 +359,64 @@ body {
   </footer>
 
 </div>
+
+<script>
+  // articles.json を読み込んで動的に記事カードを描画
+  async function loadArticles() {
+    const grid = document.getElementById('articles-grid');
+    const count = document.getElementById('section-count');
+
+    try {
+      const res = await fetch('./articles.json?v=' + Date.now());
+      if (!res.ok) throw new Error('Failed to fetch articles.json');
+      const data = await res.json();
+      const articles = (data.articles || []).slice().sort((a, b) => b.day - a.day);
+
+      if (articles.length === 0) {
+        grid.innerHTML = '<div class="state-msg">記事がまだありません</div>';
+        count.textContent = '全0件';
+        return;
+      }
+
+      const total = articles.length;
+      count.textContent = '01 / 全' + total + '件';
+
+      grid.innerHTML = articles.map(a => {
+        const dateFmt = a.date ? a.date.replace(/-/g, ' / ') : '';
+        return `
+          <a class="article-card" href="./${a.slug}/">
+            <div class="card-meta">
+              <span class="card-day">DAY ${a.day}</span>
+              <span class="card-tag">${escapeHtml(a.category || '')}</span>
+              <span class="card-date">${dateFmt}</span>
+            </div>
+            <div class="card-series">${escapeHtml(a.series || '')}</div>
+            <h2 class="card-title">${escapeHtml(a.title || '')}</h2>
+            <div class="card-cta">
+              <span>Open Interactive</span>
+              <span class="card-cta-arrow">→</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = '<div class="state-msg">記事の読み込みに失敗しました</div>';
+      count.textContent = '--';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  loadArticles();
+</script>
 
 </body>
 </html>
