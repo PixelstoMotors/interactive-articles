@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAY 191 ── 視差と平行スライド ── 横カメラが必要になった瞬間 | Pixels to Motors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --white: #f5f5f0;
+  --gray-light: #e8e8e3;
+  --gray-mid: #999;
+  --gray-dark: #444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+.article-root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--black);
+  margin: 0 -24px;
+  padding: 12px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.topbar .brand { font-weight: 700; }
+.topbar a { color: inherit; text-decoration: none; transition: opacity 0.15s ease; }
+.topbar a:hover { opacity: 0.55; }
+.topbar .brand-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--black); border-radius: 50%;
+  margin-right: 8px; transform: translateY(-1px);
+}
+.topbar .day-tag { border: 1px solid var(--black); padding: 4px 10px; font-weight: 700; }
+
+/* Hero */
+.hero { padding: 48px 0 32px; border-bottom: 1.5px solid var(--black); margin-bottom: 48px; }
+.hero-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 16px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.hero-label span { display: flex; align-items: center; gap: 6px; }
+.hero-label span::before {
+  content: ""; width: 4px; height: 4px;
+  background: var(--black); border-radius: 50%;
+}
+.hero h1 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700; line-height: 1.25;
+  letter-spacing: -0.01em; margin-bottom: 32px;
+}
+
+.hero-transition {
+  border: 1.5px solid var(--black);
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  align-items: stretch;
+}
+.hero-trans-col { padding: 22px 22px; }
+.hero-trans-col.from { background: var(--white); }
+.hero-trans-col.to { background: var(--black); color: var(--white); }
+.hero-trans-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 24px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.hero-trans-col .step {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 8px; opacity: 0.7;
+}
+.hero-trans-col .label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700; margin-bottom: 12px;
+}
+.hero-trans-col .icons { display: flex; gap: 8px; flex-wrap: wrap; }
+.hero-trans-col .icon-pill {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.05em;
+}
+
+/* Takeaway */
+.takeaway {
+  background: var(--black); color: var(--white);
+  padding: 28px 28px; margin-bottom: 64px;
+  border: 1.5px solid var(--black);
+}
+.takeaway-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-light);
+  margin-bottom: 16px; opacity: 0.7;
+}
+.takeaway-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.takeaway-card { border: 1px solid var(--white); padding: 16px; }
+.takeaway-card .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; margin-bottom: 8px;
+}
+.takeaway-card .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 8px; line-height: 1.45;
+}
+.takeaway-card .detail { font-size: 11.5px; line-height: 1.6; opacity: 0.85; }
+
+/* Section */
+.article-section { margin-bottom: 80px; }
+.section-marker {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 12px;
+}
+.section-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.08em; color: var(--gray-dark);
+}
+.section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+}
+.section-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 700; line-height: 1.4;
+  margin-bottom: 28px; letter-spacing: 0.01em;
+}
+
+/* Widget */
+.widget {
+  border: 1.5px solid var(--black);
+  padding: 22px 20px;
+  background: var(--white);
+  margin: 20px 0;
+}
+.widget-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 6px;
+}
+.widget-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 18px; letter-spacing: 0.02em; line-height: 1.4;
+}
+
+/* Scene */
+.scene-wrap {
+  border: 1px solid var(--black);
+  background: var(--white);
+  margin-bottom: 14px;
+  padding: 16px 12px;
+}
+.scene-svg { display: block; width: 100%; height: auto; }
+
+/* Cards */
+.cards-2, .cards-3, .cards-4 { display: grid; gap: 10px; }
+.cards-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-4 { grid-template-columns: repeat(4, 1fr); }
+.card { border: 1px solid var(--black); padding: 12px; }
+.card.filled { background: var(--black); color: var(--white); }
+.card-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px; opacity: 0.7;
+}
+.card-name { font-size: 13px; font-weight: 600; line-height: 1.45; margin-bottom: 4px; }
+.card-detail { font-size: 11.5px; line-height: 1.55; opacity: 0.85; }
+
+/* Value Card */
+.value-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+.value-card {
+  border: 1.5px solid var(--black);
+  padding: 18px 16px;
+  text-align: center;
+  position: relative;
+}
+.value-card.struck { background: var(--gray-light); opacity: 0.85; }
+.value-card .v-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 28px; font-weight: 700;
+  line-height: 1; margin-bottom: 4px;
+}
+.value-card.struck .v-num { text-decoration: line-through; text-decoration-thickness: 2px; }
+.value-card .v-unit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; opacity: 0.7;
+  margin-bottom: 8px;
+}
+.value-card .v-tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1px solid var(--black);
+  display: inline-block;
+  font-weight: 700;
+}
+.value-card.struck .v-tag { background: var(--black); color: var(--white); }
+
+/* Keyphrase Block */
+.keyphrase-block {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 60px 1fr 100px;
+  align-items: stretch;
+}
+.keyphrase-block.dark { background: var(--black); color: var(--white); }
+.keyphrase-mark {
+  background: var(--black); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 32px; font-weight: 700;
+}
+.keyphrase-block.dark .keyphrase-mark { background: var(--white); color: var(--black); }
+.keyphrase-body {
+  padding: 20px 22px;
+  display: flex; align-items: center;
+}
+.keyphrase-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(15px, 2vw, 19px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.keyphrase-source {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px;
+  border-left: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+}
+.keyphrase-block.dark .keyphrase-source { border-left-color: var(--white); }
+
+/* Spec Block */
+.spec-block {
+  background: var(--black); color: var(--white);
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+}
+.spec-block-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(245, 245, 240, 0.2);
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px;
+}
+.spec-block-header .stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  opacity: 0.6; text-transform: uppercase;
+}
+.spec-block-header .title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+}
+.spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.spec-item {
+  padding: 18px 14px;
+  text-align: center;
+  border-right: 1px solid rgba(245, 245, 240, 0.2);
+}
+.spec-item:last-child { border-right: none; }
+.spec-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 10px; line-height: 1;
+}
+.spec-key {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 6px;
+}
+.spec-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700; line-height: 1.3;
+}
+
+/* Concern Card */
+.concern-card {
+  border: 2px dashed var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+}
+.concern-icon-wrap {
+  display: flex; align-items: center; justify-content: center;
+  border-right: 2px dashed var(--black);
+}
+.concern-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 36px; font-weight: 700;
+}
+.concern-body { padding: 16px 18px; }
+.concern-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 4px;
+}
+.concern-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.concern-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.concern-stat { border: 1px solid var(--black); padding: 8px 10px; text-align: center; }
+.concern-stat .k {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.7;
+  margin-bottom: 4px;
+}
+.concern-stat .v {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+}
+.concern-action {
+  margin-top: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  background: var(--black);
+  color: var(--white);
+  display: inline-block;
+}
+
+/* Before/After */
+.before-after {
+  border: 1.5px solid var(--black);
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+}
+.ba-col { padding: 22px 18px; }
+.ba-col.before { background: var(--white); }
+.ba-col.after { background: var(--black); color: var(--white); }
+.ba-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 26px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.ba-stamp {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  margin-bottom: 14px; opacity: 0.6;
+}
+.ba-icon-row {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 26px; font-weight: 700;
+  line-height: 1;
+}
+.ba-name {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.ba-axes { display: flex; flex-direction: column; gap: 6px; }
+.ba-axis {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+}
+.ba-axis .axis-name { font-weight: 700; }
+.ba-axis .axis-status { opacity: 0.8; }
+
+/* Tag set */
+.tag-set { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tag-set .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.04em;
+}
+.tag-set .tag.solid { background: currentColor; }
+.tag-set .tag.solid span { color: var(--white); }
+.panel-body .tag-set .tag.solid span { color: var(--white); }
+
+/* Pillars */
+.pillars { display: grid; gap: 8px; margin-bottom: 16px; }
+.pillars[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+.pillars[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.pillars[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+.pillar {
+  border: 1.5px solid var(--black);
+  background: var(--white); color: var(--black);
+  padding: 14px 8px; cursor: pointer; text-align: center;
+  transition: background 0.18s, color 0.18s;
+  font-family: "IBM Plex Mono", monospace;
+}
+.pillar:hover { background: var(--gray-light); }
+.pillar.active { background: var(--black); color: var(--white); }
+.pillar-axis { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.pillar-name { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+
+.panel-empty {
+  border: 1px dashed var(--gray-mid);
+  padding: 20px 16px; text-align: center;
+  color: var(--gray-mid); font-size: 11.5px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.08em;
+}
+.panel-empty .arrow {
+  display: block; font-size: 18px; margin-bottom: 6px;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.panel { display: none; border: 1.5px solid var(--black); animation: slideIn 0.28s ease-out; }
+.panel.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.panel-header {
+  background: var(--black); color: var(--white);
+  padding: 12px 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 12px;
+}
+.panel-header .verdict { font-weight: 700; }
+.panel-body { padding: 16px; }
+.scene-group { transition: opacity 0.3s; opacity: 0.25; }
+.scene-group.active { opacity: 1; }
+
+/* Compare */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare-col { border: 1.5px solid var(--black); }
+.compare-col.adopted { background: var(--black); color: var(--white); }
+.compare-col-header {
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.compare-col.adopted .compare-col-header { border-bottom-color: var(--white); }
+.compare-col-header .verdict { font-weight: 700; }
+.compare-col-body { padding: 14px 16px; }
+.compare-list { list-style: none; padding: 0; margin: 0; }
+.compare-list li {
+  font-size: 12.5px; line-height: 1.5;
+  padding: 8px 0 8px 16px;
+  position: relative;
+  border-bottom: 1px solid var(--gray-light);
+}
+.compare-col.adopted .compare-list li { border-bottom-color: rgba(245, 245, 240, 0.15); }
+.compare-list li:last-child { border-bottom: none; }
+.compare-list li::before { content: "—"; position: absolute; left: 0; opacity: 0.6; }
+.compare-list .item-label {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+/* Flow */
+.flow-steps { list-style: none; padding: 0; margin: 0; }
+.flow-step {
+  border: 1.5px solid var(--black);
+  margin-bottom: 10px; background: var(--white);
+  display: grid; grid-template-columns: 56px 1fr;
+  align-items: stretch; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+.flow-step:hover { background: var(--gray-light); }
+.flow-step.active { background: var(--black); color: var(--white); }
+.flow-step:last-child { margin-bottom: 0; }
+.flow-step:not(:last-child)::after {
+  content: ""; position: absolute;
+  left: 28px; bottom: -10px;
+  width: 1.5px; height: 10px;
+  background: var(--black);
+}
+.flow-step-num {
+  background: var(--black); color: var(--white);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.flow-step.active .flow-step-num { background: var(--white); color: var(--black); }
+.flow-step-body { padding: 10px 14px; }
+.flow-step-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px; font-weight: 600; line-height: 1.4;
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.flow-step-title .toggle-mark { font-size: 11px; opacity: 0.5; transition: transform 0.2s; }
+.flow-step.active .flow-step-title .toggle-mark { transform: rotate(45deg); opacity: 1; }
+.flow-step-tags {
+  display: none;
+  flex-wrap: wrap; gap: 5px;
+  padding-top: 8px; margin-top: 8px;
+  border-top: 1px solid var(--gray-light);
+}
+.flow-step.active .flow-step-tags {
+  display: flex; animation: slideIn 0.2s ease-out;
+  border-top-color: rgba(245, 245, 240, 0.2);
+}
+.flow-step-tags .tag {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5px; letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.flow-step-tags .tag.tag-key { font-weight: 700; opacity: 1; }
+
+/* SVG common */
+.mat-rect { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.arm-base { fill: var(--gray-light); stroke: var(--black); stroke-width: 1.5; }
+.block-marker { fill: var(--black); }
+.cam-group .cam-marker { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.cam-group.active .cam-marker { fill: var(--black); }
+.cam-group .cam-tag {
+  fill: var(--black);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 700;
+}
+.cam-group.active .cam-tag { fill: var(--white); }
+.cam-group .cam-ray {
+  stroke: var(--black); stroke-width: 1; stroke-dasharray: 3 3;
+  fill: none; opacity: 0; transition: opacity 0.3s;
+}
+.cam-group.active .cam-ray { opacity: 0.4; }
+
+/* Closing */
+.closing-block { margin: 64px 0 32px; border: 1.5px solid var(--black); }
+.closing-label {
+  background: var(--black); color: var(--white);
+  padding: 14px 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.closing-grid { display: grid; grid-template-columns: 1fr 80px 1fr; }
+.closing-side { padding: 32px 28px; }
+.closing-side.before { background: var(--white); }
+.closing-side.after { background: var(--black); color: var(--white); }
+.closing-arrow {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "IBM Plex Mono", monospace; font-size: 32px;
+  border-left: 1.5px solid var(--black);
+  border-right: 1.5px solid var(--black);
+}
+.closing-side .when {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.16em;
+  margin-bottom: 12px; opacity: 0.6;
+}
+.closing-side .world {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.8vw, 24px);
+  font-weight: 700; line-height: 1.35;
+  margin-bottom: 16px;
+}
+.closing-side .seen { display: flex; flex-direction: column; gap: 6px; }
+.closing-side .seen-item {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  display: flex; justify-content: space-between;
+}
+
+/* Footer */
+.footer {
+  border-top: 1.5px solid var(--black);
+  padding: 32px 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--gray-dark);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 12px;
+}
+
+/* Parallax illustration */
+.parallax-illust-wrap {
+  border: 1px solid var(--black);
+  background: var(--white);
+  margin: 14px 0;
+  padding: 16px 12px;
+}
+.parallax-svg { display: block; width: 100%; height: auto; max-height: 320px; }
+.px-line { stroke: var(--black); stroke-width: 1.5; fill: none; }
+.px-line-thin { stroke: var(--black); stroke-width: 1; fill: none; }
+.px-fill { fill: var(--black); }
+.px-white { fill: var(--white); stroke: var(--black); stroke-width: 1.5; }
+.px-ray { stroke: var(--black); stroke-width: 1; stroke-dasharray: 4 3; fill: none; opacity: 0.6; }
+.px-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; fill: var(--black); font-weight: 700;
+}
+.px-text-small {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8.5px; fill: var(--black); opacity: 0.7;
+}
+.px-dim { stroke: var(--black); stroke-width: 1; stroke-dasharray: 2 2; fill: none; opacity: 0.5; }
+
+::selection { background: var(--black); color: var(--white); }
+
+@media (max-width: 720px) {
+  .article-root { padding: 0 16px 60px; }
+  .topbar { margin: 0 -16px; padding: 12px 16px; font-size: 10px; }
+  .hero { padding: 36px 0 24px; }
+  .hero-transition { grid-template-columns: 1fr; }
+  .hero-trans-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .takeaway { padding: 24px 20px; }
+  .takeaway-cards { grid-template-columns: 1fr; }
+  .widget { padding: 18px 14px; }
+  .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
+  .value-row { grid-template-columns: 1fr; }
+  .pillars[data-count="3"], .pillars[data-count="4"] { grid-template-columns: repeat(2, 1fr); }
+  .compare-grid { grid-template-columns: 1fr; }
+  .spec-grid { grid-template-columns: repeat(2, 1fr); }
+  .spec-item:nth-child(2) { border-right: none; }
+  .spec-item:nth-child(1), .spec-item:nth-child(2) { border-bottom: 1px solid rgba(245, 245, 240, 0.2); }
+  .panel-header, .compare-col-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .keyphrase-block { grid-template-columns: 48px 1fr; }
+  .keyphrase-source { display: none; }
+  .keyphrase-mark { font-size: 22px; }
+  .concern-card { grid-template-columns: 60px 1fr; }
+  .concern-stats { grid-template-columns: 1fr; }
+  .before-after, .closing-grid { grid-template-columns: 1fr; }
+  .ba-arrow, .closing-arrow { border-left: none; border-right: none; border-top: 1.5px solid var(--black); border-bottom: 1.5px solid var(--black); padding: 8px; height: 40px; }
+  .article-section { margin-bottom: 60px; }
+}
+</style></head>
+<body>
+
+<div class="article-root">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a class="brand" href="https://pixelstomotors.github.io/interactive-articles/" target="_blank" rel="noopener noreferrer"><span class="brand-dot"></span>Pixels to Motors</a>
+    <a class="day-tag" href="https://adaptdesign.jp/pixelstomotors/record/parallax-and-pose-constrained-motion" target="_blank" rel="noopener noreferrer">DAY 191</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-label">
+      <span>mechArm 270 Pi</span>
+      <span>Log #9</span>
+      <span>動的追従の限界を探る</span>
+    </div>
+    <h1>視差と平行スライド ── 横カメラが必要になった瞬間</h1>
+
+    <div class="hero-transition">
+      <div class="hero-trans-col from">
+        <div class="step">FROM / Log #8</div>
+        <div class="label">DESCEND後のZ暴走<br>仮説: 領域でZ係数が違うのでは</div>
+        <div class="icons">
+          <span class="icon-pill">領域依存性</span>
+          <span class="icon-pill">refine_mode暴走</span>
+          <span class="icon-pill">mm/deg 仮説</span>
+        </div>
+      </div>
+      <div class="hero-trans-arrow">→</div>
+      <div class="hero-trans-col to">
+        <div class="step">TO / Log #9</div>
+        <div class="label">仮説は半分当たり<br>だが本当の問題は別レイヤー</div>
+        <div class="icons">
+          <span class="icon-pill">カメラ視差</span>
+          <span class="icon-pill">コマ撮り追従</span>
+          <span class="icon-pill">横カメラ導入へ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAKEAWAY -->
+  <section class="takeaway">
+    <div class="takeaway-label">💡 Key Takeaway ── 本日の達成</div>
+    <div class="takeaway-cards">
+      <div class="takeaway-card">
+        <div class="num">01 / インフラ復活</div>
+        <div class="title">daemonが死んでいた → 全kill+クリーン起動</div>
+        <div class="detail">systemd化の必要性が兆候として明確化</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">02 / 計測完了</div>
+        <div class="title">DESCEND領域のZ係数を実測</div>
+        <div class="detail">4.786 mm/deg ── DAY189比 -18%</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="num">03 / 設計思想の転換</div>
+        <div class="title">測ったデータが対話を転がし、設計のズレが浮上</div>
+        <div class="detail">リーチ伸縮ではなく平行スライドが必要 / 横カメラへ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 01: daemonが死んでいた -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">01</span>
+      <span class="section-label">起点 / インフラ復活劇</span>
+    </div>
+    <h2 class="section-heading">daemonが死んでいた ── 復活までの落とし穴</h2>
+
+    <div class="widget">
+      <div class="widget-label">トラブルシュート手順</div>
+      <h3 class="widget-heading">3つのハマりポイントを順に解除</h3>
+      <ol class="flow-steps">
+        <li class="flow-step">
+          <div class="flow-step-num">01</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>Connection refused → port 5555でlistenが消滅</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">DETECT</span>
+              <span class="tag">timeout=5.0s</span>
+              <span class="tag">socket closed</span>
+              <span class="tag">Errno 61</span>
+              <span class="tag">pid → DEAD</span>
+              <span class="tag">切断ログなし</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">02</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>SSH越しの nohup ... & がハング</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">FIX</span>
+              <span class="tag">&lt; /dev/null で stdin 切断</span>
+              <span class="tag">シングルクォートで $! を Pi 側展開</span>
+              <span class="tag">stdout/stdin が閉じない罠</span>
+            </div>
+          </div>
+        </li>
+        <li class="flow-step">
+          <div class="flow-step-num">03</div>
+          <div class="flow-step-body">
+            <div class="flow-step-title">
+              <span>Address already in use ── 孤児プロセスがportを保持</span>
+              <span class="toggle-mark">+</span>
+            </div>
+            <div class="flow-step-tags">
+              <span class="tag tag-key">CLEAN</span>
+              <span class="tag">pkill -9 -f mecharm_daemon.py</span>
+              <span class="tag">pidファイル外の孤児</span>
+              <span class="tag">sleep 2 → 再起動成功</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">中期PENDINGの兆候</div>
+        <div class="concern-title">daemonの systemd サービス化 (C方式) が必要</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">死亡時の挙動</div><div class="v">切断ログなし</div></div>
+          <div class="concern-stat"><div class="k">復活手順</div><div class="v">SSH手動</div></div>
+          <div class="concern-stat"><div class="k">孤児pid</div><div class="v">port保持</div></div>
+        </div>
+        <div class="concern-action">→ 把持成立後の優先タスクとして妥当性が確定</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 02: 計測スコープの確定 -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">02</span>
+      <span class="section-label">戦略 / スコープ確定</span>
+    </div>
+    <h2 class="section-heading">計測スコープの3案から (a) 1点ピンポイント計測へ</h2>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">本当か？</div>
+      </div>
+      <div class="keyphrase-source">エイイチ<br>根拠提示の要求</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">計測スコープ3案</div>
+      <h3 class="widget-heading">どの粒度で測るか ── 案を選択</h3>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="A">
+          <div class="pillar-axis">a</div>
+          <div class="pillar-name">ピンポイント1点</div>
+        </div>
+        <div class="pillar" data-axis="B">
+          <div class="pillar-axis">b</div>
+          <div class="pillar-name">経路3〜5姿勢</div>
+        </div>
+        <div class="pillar" data-axis="C">
+          <div class="pillar-axis">c</div>
+          <div class="pillar-name">j0振りも追加</div>
+        </div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>案を選択</div>
+
+      <div class="panel" data-axis="A">
+        <div class="panel-header">
+          <span>(a) DESCEND姿勢ピンポイント1点</span>
+          <span class="verdict">採用 ★</span>
+        </div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card filled">
+              <div class="card-label">採用根拠 01</div>
+              <div class="card-name">変化はj2のみ</div>
+              <div class="card-detail">APPROACH→DESCENDでj1=87.74共通、j2が-20→-5の15度差だけ</div>
+            </div>
+            <div class="card filled">
+              <div class="card-label">採用根拠 02</div>
+              <div class="card-name">j0は独立</div>
+              <div class="card-detail">追従ループ内で別軸として動く (L884-889)。j0振りは不要</div>
+            </div>
+            <div class="card filled">
+              <div class="card-label">採用根拠 03</div>
+              <div class="card-name">中間姿勢は通らない</div>
+              <div class="card-detail">瞬間遷移のため経路上の計測には意味がない</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="B">
+        <div class="panel-header">
+          <span>(b) APPROACH→DESCEND経路上の3〜5姿勢</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="panel-body">
+          <div class="tag-set">
+            <span class="tag">中間姿勢は瞬間遷移で通らない</span>
+            <span class="tag">遷移マップは現状不要</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="C">
+        <div class="panel-header">
+          <span>(c) DESCEND姿勢でj0も振りながら</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="panel-body">
+          <div class="tag-set">
+            <span class="tag">j0は追従ループ内で独立に動く</span>
+            <span class="tag">j2の差が領域差の本体</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-block">
+      <div class="spec-block-header">
+        <span class="stamp">確定計測姿勢</span>
+        <span class="title">CALIB_BASE (DESCEND領域)</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-icon">◎</div>
+          <div class="spec-key">j0</div>
+          <div class="spec-value">0.0</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">=</div>
+          <div class="spec-key">j1</div>
+          <div class="spec-value">87.74</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">★</div>
+          <div class="spec-key">j2 (変更点)</div>
+          <div class="spec-value">-5.0</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⟷</div>
+          <div class="spec-key">DELTA</div>
+          <div class="spec-value">±2.0°</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 03: 計測実行と結果 -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">03</span>
+      <span class="section-label">実行 / 計測結果</span>
+    </div>
+    <h2 class="section-heading">Case A〜D 全量計測 ── 連動Dが本番値</h2>
+
+    <div class="widget">
+      <div class="widget-label">|mm/deg_Z| 平均</div>
+      <h3 class="widget-heading">単独関節と連動の感度比較 (DAY191)</h3>
+      <div class="cards-4">
+        <div class="card">
+          <div class="card-label">CASE A</div>
+          <div class="card-name">j1単独 / 2.93</div>
+          <div class="card-detail">±非対称性 22%</div>
+        </div>
+        <div class="card">
+          <div class="card-label">CASE B</div>
+          <div class="card-name">j2単独 / 1.79</div>
+          <div class="card-detail">±非対称性 50%</div>
+        </div>
+        <div class="card">
+          <div class="card-label">CASE C</div>
+          <div class="card-name">j4単独 / 0.42</div>
+          <div class="card-detail">±非対称性 150%</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">CASE D ★</div>
+          <div class="card-name">j1+j2+j4 / 4.786</div>
+          <div class="card-detail">±非対称性 5% (本番値)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">i</div></div>
+      <div class="concern-body">
+        <div class="concern-label">スクリプト差分 (DAY189 → DAY191)</div>
+        <div class="concern-title">変えたのは姿勢値とdaemon経由化のみ</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">姿勢</div><div class="v">j2: -20 → -5</div></div>
+          <div class="concern-stat"><div class="k">通信</div><div class="v">SSH → daemon</div></div>
+          <div class="concern-stat"><div class="k">計測パラ</div><div class="v">全て同一</div></div>
+        </div>
+        <div class="concern-action">→ grep -A 8 で展開値を目視確認してから承認</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 04: DAY189 vs DAY191 -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">04</span>
+      <span class="section-label">比較 / 領域依存性</span>
+    </div>
+    <h2 class="section-heading">DAY189 (APPROACH領域) vs DAY191 (DESCEND領域)</h2>
+
+    <div class="value-row">
+      <div class="value-card struck">
+        <div class="v-label">DAY189 / APPROACH領域</div>
+        <div class="v-num">5.866</div>
+        <div class="v-unit">mm/deg (j2=-20)</div>
+        <div class="v-tag">PREV</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">DAY191 / DESCEND領域</div>
+        <div class="v-num">4.786</div>
+        <div class="v-unit">mm/deg (j2=-5)</div>
+        <div class="v-tag">MEASURED</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">差分</div>
+        <div class="v-num">-18%</div>
+        <div class="v-unit">領域差として有意</div>
+        <div class="v-tag">DELTA</div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-header">
+          <span>DAY189 / APPROACH (j2=-20)</span>
+          <span class="verdict">参照</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">+方向</span>|mm/deg_Z| = 6.320</li>
+            <li><span class="item-label">-方向</span>|mm/deg_Z| = 5.412</li>
+            <li><span class="item-label">±非対称性</span>17% (大きい)</li>
+            <li><span class="item-label">符号</span>負</li>
+          </ul>
+        </div>
+      </div>
+      <div class="compare-col adopted">
+        <div class="compare-col-header">
+          <span>DAY191 / DESCEND (j2=-5)</span>
+          <span class="verdict">今回実測</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">+方向</span>|mm/deg_Z| = 4.667 (-26%)</li>
+            <li><span class="item-label">-方向</span>|mm/deg_Z| = 4.905 (-9%)</li>
+            <li><span class="item-label">±非対称性</span>5% (より対称に)</li>
+            <li><span class="item-label">符号</span>負 (同じ)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">最初の解釈 (この時点では)</div>
+      <h3 class="widget-heading">「係数だけ4.786に切り替えればrefine_modeは直る」と提示</h3>
+      <div class="tag-set">
+        <span class="tag solid"><span>仮説: 5.866を使うと約23%過大な指令</span></span>
+        <span class="tag">オーバーシュート部分は係数で説明可能</span>
+        <span class="tag">「離れる方向」は別要因</span>
+        <span class="tag">推奨: 係数差し替え → refine_mode 再実行</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 05: 認識のズレ発覚 -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">05</span>
+      <span class="section-label">転換点 / 認識のズレ</span>
+    </div>
+    <h2 class="section-heading">「今回のテスト関係ないみたい」── 前提が崩れた瞬間</h2>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">Z方向へのズレはアプローチ姿勢時のアームの姿勢のまま、<br>PICKの姿勢になった時にアームが上下する時に起こるものだけど？？？<br>認識が違うみたいだけど。今回のテスト関係ないみたいに思ったけど。</div>
+      </div>
+      <div class="keyphrase-source">エイイチ<br>前提の差し戻し</div>
+    </div>
+
+    <div class="before-after">
+      <div class="ba-col before">
+        <div class="ba-stamp">私の想定構造</div>
+        <div class="ba-icon-row">APPROACH → DESCEND → refine</div>
+        <div class="ba-name">3段階の追従</div>
+        <div class="ba-axes">
+          <div class="ba-axis"><span class="axis-name">APPROACH</span><span class="axis-status">XZ追従</span></div>
+          <div class="ba-axis"><span class="axis-name">遷移</span><span class="axis-status">瞬間切替</span></div>
+          <div class="ba-axis"><span class="axis-name">refine_mode</span><span class="axis-status">XZ再追従</span></div>
+        </div>
+      </div>
+      <div class="ba-arrow">↻</div>
+      <div class="ba-col after">
+        <div class="ba-stamp">正しい構造</div>
+        <div class="ba-icon-row">姿勢遷移 = Zズレ発生現場</div>
+        <div class="ba-name">遷移そのものが問題</div>
+        <div class="ba-axes">
+          <div class="ba-axis"><span class="axis-name">APPROACH</span><span class="axis-status">大まか追従</span></div>
+          <div class="ba-axis"><span class="axis-name">遷移 (上下動)</span><span class="axis-status">Zズレ発生</span></div>
+          <div class="ba-axis"><span class="axis-name">PICK姿勢</span><span class="axis-status">本番追従</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concern-card">
+      <div class="concern-icon-wrap"><div class="concern-icon">!</div></div>
+      <div class="concern-body">
+        <div class="concern-label">見落としていた幾何学</div>
+        <div class="concern-title">上カメラは完全な真上ではない ── カメラ視差</div>
+        <div class="concern-stats">
+          <div class="concern-stat"><div class="k">DAY190報告</div><div class="v">TIP_X 61.4mmシフト</div></div>
+          <div class="concern-stat"><div class="k">真の原因</div><div class="v">視差で見えただけ</div></div>
+          <div class="concern-stat"><div class="k">物理位置</div><div class="v">それほどズレてない</div></div>
+        </div>
+        <div class="concern-action">→ 追従ロジックの問題ではなく撮影系の幾何学</div>
+      </div>
+    </div>
+
+    <!-- カメラ視差の図解 -->
+    <div class="parallax-illust-wrap">
+      <svg class="parallax-svg" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+        <text x="20" y="20" class="px-text-small">SIDE VIEW / カメラ視差の発生</text>
+
+        <!-- カメラ (左上、ややオフセット) -->
+        <rect class="px-white" x="100" y="40" width="50" height="26" rx="2"/>
+        <text x="125" y="58" text-anchor="middle" class="px-text">CAM</text>
+        <text x="125" y="80" text-anchor="middle" class="px-text-small">少し横にズレた角度</text>
+
+        <!-- マット (下部) -->
+        <line class="px-line" x1="180" y1="250" x2="640" y2="250"/>
+        <text x="200" y="268" class="px-text-small">マット面 (Z=0)</text>
+
+        <!-- ブロック (真の位置) -->
+        <rect class="px-fill" x="430" y="236" width="18" height="14"/>
+        <text x="439" y="288" text-anchor="middle" class="px-text">BLOCK</text>
+
+        <!-- APPROACH姿勢の TIP (高い位置) -->
+        <circle cx="430" cy="120" r="8" fill="none" stroke="#0d0d0d" stroke-width="1.5"/>
+        <text x="455" y="124" class="px-text-small">TIP (APPROACH)</text>
+
+        <!-- DESCEND姿勢の TIP (低い位置) -->
+        <circle cx="430" cy="220" r="8" fill="#0d0d0d"/>
+        <text x="455" y="224" class="px-text-small">TIP (DESCEND)</text>
+
+        <!-- カメラからAPPROACH TIPへの視線 -->
+        <line class="px-ray" x1="150" y1="60" x2="430" y2="120"/>
+
+        <!-- カメラからDESCEND TIPへの視線 -->
+        <line class="px-ray" x1="150" y1="60" x2="430" y2="220"/>
+
+        <!-- 視線をマット面まで延長 (検出位置) -->
+        <line class="px-line-thin" x1="150" y1="60" x2="540" y2="250" stroke-dasharray="2 2"/>
+        <line class="px-line-thin" x1="150" y1="60" x2="488" y2="250" stroke-dasharray="2 2"/>
+
+        <!-- 検出位置のマーカー -->
+        <circle cx="540" cy="250" r="4" fill="none" stroke="#0d0d0d" stroke-width="1.5"/>
+        <circle cx="488" cy="250" r="4" fill="#0d0d0d"/>
+
+        <!-- 視差量 -->
+        <line class="px-dim" x1="488" y1="265" x2="540" y2="265"/>
+        <line class="px-dim" x1="488" y1="262" x2="488" y2="268"/>
+        <line class="px-dim" x1="540" y1="262" x2="540" y2="268"/>
+        <text x="514" y="282" text-anchor="middle" class="px-text">視差シフト</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 06: コマ撮り追従と平行スライド -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">06</span>
+      <span class="section-label">設計思想 / 追従モデルの転換</span>
+    </div>
+    <h2 class="section-heading">コマ撮り追従 + 平行スライドという正解</h2>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">カメラはコマ撮りしているでしょ？<br>アームが左右、上下したとしても常にブロックとTIPの位置を追いかけていかないと</div>
+      </div>
+      <div class="keyphrase-source">エイイチ<br>追従モデル指摘</div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-header">
+          <span>段階分け追従 (誤)</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">構造</span>追従 → 中断 → ジャンプ → 再開</li>
+            <li><span class="item-label">遷移中</span>古いdiff_zで動く → 暴走</li>
+            <li><span class="item-label">問題</span>視差ズレを次のフレームで補正できない</li>
+            <li><span class="item-label">前提</span>refine_modeを別工程として扱う</li>
+          </ul>
+        </div>
+      </div>
+      <div class="compare-col adopted">
+        <div class="compare-col-header">
+          <span>コマ撮り追従 (正)</span>
+          <span class="verdict">採用 ★</span>
+        </div>
+        <div class="compare-col-body">
+          <ul class="compare-list">
+            <li><span class="item-label">構造</span>毎フレーム検出 → 毎フレーム補正</li>
+            <li><span class="item-label">遷移中</span>視差ズレも次のフレームで吸収</li>
+            <li><span class="item-label">原則</span>画面上で重なるまで動かし続ける</li>
+            <li><span class="item-label">前提</span>段階を区切らず一本の追従</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">Z方向のズレの埋め方 ── 3案</div>
+      <h3 class="widget-heading">PICK姿勢で画面上のZ方向ズレを何で埋めるか</h3>
+
+      <div class="pillars" data-count="3">
+        <div class="pillar" data-axis="I">
+          <div class="pillar-axis">i</div>
+          <div class="pillar-name">リーチ伸縮</div>
+        </div>
+        <div class="pillar" data-axis="II">
+          <div class="pillar-axis">ii</div>
+          <div class="pillar-name">平行スライド</div>
+        </div>
+        <div class="pillar" data-axis="III">
+          <div class="pillar-axis">iii</div>
+          <div class="pillar-name">Zズレ無視</div>
+        </div>
+      </div>
+
+      <div class="panel-empty"><span class="arrow">↑</span>案を選択</div>
+
+      <div class="panel" data-axis="I">
+        <div class="panel-header">
+          <span>(i) j1+j2+j4 連動 (今のロジック)</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="panel-body">
+          <div class="tag-set">
+            <span class="tag">リーチが伸縮する</span>
+            <span class="tag">高さも変わってしまう</span>
+            <span class="tag">マット高さ維持不可</span>
+            <span class="tag">DAY191で測ったのはこれ</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="II">
+        <div class="panel-header">
+          <span>(ii) アーム全体を平行にスライド</span>
+          <span class="verdict">採用 ★</span>
+        </div>
+        <div class="panel-body">
+          <div class="cards-3">
+            <div class="card filled">
+              <div class="card-label">要件 01</div>
+              <div class="card-name">マット高さ維持</div>
+              <div class="card-detail">グリッパーをマットギリギリに保ったまま画面上Zだけ動かす</div>
+            </div>
+            <div class="card filled">
+              <div class="card-label">要件 02</div>
+              <div class="card-name">グリッパー水平</div>
+              <div class="card-detail">どの位置でもマットと並行を維持する必要</div>
+            </div>
+            <div class="card filled">
+              <div class="card-label">要件 03</div>
+              <div class="card-name">姿勢拘束付き運動学</div>
+              <div class="card-detail">3〜4関節を協調、高さと水平を保つ別の組み合わせ</div>
+            </div>
+          </div>
+          <div class="tag-set">
+            <span class="tag solid"><span>j4の使い方が鍵</span></span>
+            <span class="tag solid"><span>新規IKが必要</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-axis="III">
+        <div class="panel-header">
+          <span>(iii) Zズレ無視・j0でXだけ補正</span>
+          <span class="verdict">不採用</span>
+        </div>
+        <div class="panel-body">
+          <div class="tag-set">
+            <span class="tag">画面上の一致が取れない</span>
+            <span class="tag">把持精度が出ない</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">二段追従の本当の意味</div>
+      <h3 class="widget-heading">大まか追従 → 平行スライド精密追従</h3>
+      <div class="cards-2">
+        <div class="card">
+          <div class="card-label">PHASE 1 / APPROACH</div>
+          <div class="card-name">大まかに合わせるだけ</div>
+          <div class="card-detail">どうせPICK姿勢に下ろすとTIPがズレる (視差) ので精度不要</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">PHASE 2 / PICK姿勢 (本番)</div>
+          <div class="card-name">マット高さで画面上の一致</div>
+          <div class="card-detail">グリッパーがマットギリギリの状態で、TIPと赤丸をピッタリ重ねる</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ -->
+  <!-- SECTION 07: 横カメラ + 測った値を使わない判断 -->
+  <!-- ================================ -->
+  <section class="article-section">
+    <div class="section-marker">
+      <span class="section-num">07</span>
+      <span class="section-label">次フェーズ / 横カメラと値の扱い</span>
+    </div>
+    <h2 class="section-heading">横カメラ導入と「測った値は使わない」判断</h2>
+
+    <div class="keyphrase-block dark">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">なのでカメラをもう一台横から写すのが<br>そろそろ必要なんじゃない？</div>
+      </div>
+      <div class="keyphrase-source">エイイチ<br>次フェーズ提案</div>
+    </div>
+
+    <div class="cards-2">
+      <div class="card">
+        <div class="card-label">CAMERA 01 / 既存</div>
+        <div class="card-name">上カメラ ── X/Z方向の位置合わせ</div>
+        <div class="card-detail">赤丸とTIPの画面上一致 / ただし完全な真上ではないため視差あり / 高さ判断は不可</div>
+      </div>
+      <div class="card filled">
+        <div class="card-label">CAMERA 02 / 次フェーズ</div>
+        <div class="card-name">横カメラ ── Y方向の確認</div>
+        <div class="card-detail">マット高さ維持 / グリッパー水平の検証 / 姿勢拘束付き運動学の実機検証手段</div>
+      </div>
+    </div>
+
+    <div class="value-row">
+      <div class="value-card struck">
+        <div class="v-label">DAY191 実測値</div>
+        <div class="v-num">4.786</div>
+        <div class="v-unit">mm/deg (リーチ伸縮)</div>
+        <div class="v-tag">DISCARDED</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">必要なのは別の感度</div>
+        <div class="v-num" style="font-size: 16px; padding: 6px 0; line-height: 1.4;">平行スライドの<br>mm/deg</div>
+        <div class="v-tag">REQUIRED</div>
+      </div>
+      <div class="value-card">
+        <div class="v-label">測定可能になる時期</div>
+        <div class="v-num" style="font-size: 16px; padding: 6px 0; line-height: 1.4;">横カメラ<br>導入後</div>
+        <div class="v-tag">NEXT</div>
+      </div>
+    </div>
+
+    <div class="keyphrase-block">
+      <div class="keyphrase-mark">"</div>
+      <div class="keyphrase-body">
+        <div class="keyphrase-text">無駄になったわけではない。<br>測ったデータを見たことで、設計思想のズレが浮上した。</div>
+      </div>
+      <div class="keyphrase-source">本日の結論<br>計測の意義</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-label">残った知見</div>
+      <h3 class="widget-heading">使わなくても効く ── 将来のキャリブ設計に残るもの</h3>
+      <div class="cards-3">
+        <div class="card">
+          <div class="card-label">KNOWLEDGE 01</div>
+          <div class="card-name">姿勢領域でZ係数は変わる</div>
+          <div class="card-detail">-18% (5.866 → 4.786) ── 領域依存性は事実として確認</div>
+        </div>
+        <div class="card">
+          <div class="card-label">KNOWLEDGE 02</div>
+          <div class="card-name">±非対称性も領域で変わる</div>
+          <div class="card-detail">17% → 5% ── 領域でカーブの対称性が違う</div>
+        </div>
+        <div class="card filled">
+          <div class="card-label">KNOWLEDGE 03</div>
+          <div class="card-name">仮説のレイヤー自体が違った</div>
+          <div class="card-detail">運動学の問題ではなく視差・コマ撮り・平行スライドの問題だった</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div class="closing-block">
+    <div class="closing-label">本日の結論 ── 測ったから分かったこと</div>
+    <div class="closing-grid">
+      <div class="closing-side before">
+        <div class="when">BEFORE</div>
+        <div class="world">段階分け追従 + リーチ伸縮 + 上カメラだけ</div>
+        <div class="seen">
+          <div class="seen-item"><span>追従モデル</span><span>段階分け</span></div>
+          <div class="seen-item"><span>Z方向の補正</span><span>リーチ伸縮</span></div>
+          <div class="seen-item"><span>視差の認識</span><span>✕</span></div>
+          <div class="seen-item"><span>横カメラ</span><span>✕</span></div>
+        </div>
+      </div>
+      <div class="closing-arrow">→</div>
+      <div class="closing-side after">
+        <div class="when">AFTER</div>
+        <div class="world">コマ撮り追従 + 平行スライド + 横カメラ計画</div>
+        <div class="seen">
+          <div class="seen-item"><span>追従モデル</span><span>毎フレーム</span></div>
+          <div class="seen-item"><span>Z方向の補正</span><span>平行スライド</span></div>
+          <div class="seen-item"><span>視差の認識</span><span>◎</span></div>
+          <div class="seen-item"><span>横カメラ</span><span>次フェーズ</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div>© ADAPT DESIGN / Pixels to Motors</div>
+    <div>UX × AI × ROBOTICS</div>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.widget').forEach(widget => {
+    const pillars = widget.querySelectorAll('.pillar');
+    if (pillars.length === 0) return;
+    const panels = widget.querySelectorAll('.panel');
+    const emptyPanel = widget.querySelector('.panel-empty');
+    const sceneGroups = widget.querySelectorAll('.scene-group');
+
+    pillars.forEach(p => {
+      p.addEventListener('click', () => {
+        const axis = p.dataset.axis;
+        pillars.forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        panels.forEach(panel => panel.classList.remove('active'));
+        const target = widget.querySelector(`.panel[data-axis="${axis}"]`);
+        if (target) target.classList.add('active');
+        if (emptyPanel) emptyPanel.style.display = 'none';
+        sceneGroups.forEach(g => {
+          g.classList.toggle('active', g.dataset.axis === axis);
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('.flow-step').forEach(step => {
+    step.addEventListener('click', () => step.classList.toggle('active'));
+  });
+</script>
+
+</body>
+</html>
