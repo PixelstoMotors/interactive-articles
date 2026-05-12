@@ -1,6 +1,14 @@
 {
   "articles": [
     {
+      "day": 193,
+      "slug": "visual-article-builder",
+      "date": "2026-05-12",
+      "category": "公開基盤構築",
+      "series": "Build-in-public 公開システム",
+      "title": "記事をビジュアルウィジェットで作り直す日 ── STUDIO と GitHub Pages の二層公開システムを建てた"
+    },
+    {
       "day": 192,
       "slug": "setting-up-the-side-camera",
       "date": "2026-05-07",
