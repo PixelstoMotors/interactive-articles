@@ -1,6 +1,14 @@
 {
   "articles": [
     {
+      "day": 196,
+      "slug": "side-camera-pipeline-split",
+      "date": "2026-05-13",
+      "category": "デジタルツイン学習",
+      "series": "mechArm 270 Pi 動的追従の限界を探る ── Log #11",
+      "title": "横カメラを統合する ── 検出パイプラインを上向きと前向きに分割した"
+    },
+    {
       "day": 190,
       "slug": "mecharm-descend-tip-shift-two-stage-tracking",
       "date": "2026-05-12",
