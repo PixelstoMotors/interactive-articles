@@ -370,7 +370,15 @@ body {
       const res = await fetch('./articles.json?v=' + Date.now());
       if (!res.ok) throw new Error('Failed to fetch articles.json');
       const data = await res.json();
-      const articles = (data.articles || []).slice().sort((a, b) => b.day - a.day);
+      const articles = (data.articles || []).slice().sort((a, b) => {
+        // pinned 記事を最上位に固定（戦略 §①定義系のハブ記事用）
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        // 同グループ内は day 数値降順（day 無しは末尾）
+        const ad = typeof a.day === 'number' ? a.day : -Infinity;
+        const bd = typeof b.day === 'number' ? b.day : -Infinity;
+        return bd - ad;
+      });
 
       if (articles.length === 0) {
         grid.innerHTML = '<div class="state-msg">記事がまだありません</div>';
@@ -383,10 +391,11 @@ body {
 
       grid.innerHTML = articles.map(a => {
         const dateFmt = a.date ? a.date.replace(/-/g, ' / ') : '';
+        const dayLabel = a.pinned ? 'HUB' : 'DAY ' + a.day;
         return `
           <a class="article-card" href="./${a.slug}/">
             <div class="card-meta">
-              <span class="card-day">DAY ${a.day}</span>
+              <span class="card-day">${dayLabel}</span>
               <span class="card-tag">${escapeHtml(a.category || '')}</span>
               <span class="card-date">${dateFmt}</span>
             </div>

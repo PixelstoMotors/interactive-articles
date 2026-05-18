@@ -1,6 +1,14 @@
 {
   "articles": [
     {
+      "pinned": true,
+      "slug": "motion-ux-definitive",
+      "date": "2026-05-18",
+      "category": "Definitive",
+      "series": "Pixels to Motors / Motion UX — Hub",
+      "title": "Motion UX とは何か ── ロボットの動きを体験として設計する"
+    },
+    {
       "day": 196,
       "slug": "side-camera-pipeline-split",
       "date": "2026-05-13",

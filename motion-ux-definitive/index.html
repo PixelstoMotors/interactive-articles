@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion UX とは何か ── ロボットの動きを体験として設計する | Pixels to Motors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --white: #f5f5f0;
+  --gray-light: #e8e8e3;
+  --gray-mid: #999;
+  --gray-dark: #444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+.article-root { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--black);
+  margin: 0 -24px;
+  padding: 12px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.topbar .brand { font-weight: 700; }
+.topbar a { color: inherit; text-decoration: none; transition: opacity 0.15s ease; }
+.topbar a:hover { opacity: 0.55; }
+.topbar .brand-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--black); border-radius: 50%;
+  margin-right: 8px; transform: translateY(-1px);
+}
+.topbar .day-tag { border: 1px solid var(--black); padding: 4px 10px; font-weight: 700; }
+
+/* Hero */
+.hero { padding: 48px 0 32px; border-bottom: 1.5px solid var(--black); margin-bottom: 48px; }
+.hero-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+  margin-bottom: 16px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.hero-label span { display: flex; align-items: center; gap: 6px; }
+.hero-label span::before {
+  content: ""; width: 4px; height: 4px;
+  background: var(--black); border-radius: 50%;
+}
+.hero h1 {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(28px, 5.6vw, 48px);
+  font-weight: 700; line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 16px;
+}
+.hero-en {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(13px, 1.6vw, 16px);
+  color: var(--gray-dark);
+  margin-bottom: 24px;
+  letter-spacing: 0.005em;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--gray-dark);
+}
+.hero-meta .meta-key {
+  font-size: 9.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-right: 8px;
+}
+
+/* Section */
+.article-section { margin-bottom: 80px; }
+.section-marker {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--black);
+  padding-bottom: 12px;
+}
+.section-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.08em; color: var(--gray-dark);
+}
+.section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray-dark);
+}
+.section-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 700; line-height: 1.4;
+  margin-bottom: 28px; letter-spacing: 0.01em;
+}
+
+/* TODO placeholder */
+.todo-placeholder {
+  border: 1px dashed var(--gray-mid);
+  padding: 20px 22px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--gray-mid);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+.todo-placeholder strong {
+  display: block;
+  font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-dark);
+  margin-bottom: 8px;
+}
+
+/* Related list (empty for now) */
+.related-list {
+  list-style: none;
+  padding: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+}
+.related-list:empty::before {
+  content: "（未追記）";
+  font-size: 12px;
+  color: var(--gray-mid);
+  letter-spacing: 0.04em;
+}
+
+/* Revision log */
+.revision-log {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--gray-dark);
+  list-style: none;
+}
+.revision-log li {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--gray-light);
+}
+.revision-log li:last-child { border-bottom: none; }
+
+/* Footer */
+.footer {
+  border-top: 1.5px solid var(--black);
+  padding: 32px 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--gray-dark);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 12px;
+}
+
+::selection { background: var(--black); color: var(--white); }
+
+@media (max-width: 640px) {
+  .article-root { padding: 0 16px 60px; }
+  .topbar { margin: 0 -16px; padding: 12px 16px; font-size: 10px; }
+  .hero { padding: 32px 0 24px; margin-bottom: 32px; }
+  .article-section { margin-bottom: 60px; }
+}
+</style>
+</head>
+<body>
+
+<div class="article-root">
+
+  <header class="topbar">
+    <a class="brand" href="https://pixelstomotors.github.io/interactive-articles/" target="_blank" rel="noopener noreferrer"><span class="brand-dot"></span>Pixels to Motors</a>
+    <!-- TODO: STUDIO 公開時、href を adaptdesign.jp 上のハブ記事 URL に差し替える -->
+    <span class="day-tag">HUB</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-label">
+      <span>Definitive</span>
+      <span>Motion UX</span>
+      <span>Hub Article</span>
+    </div>
+    <h1>Motion UX とは何か ── ロボットの動きを体験として設計する</h1>
+    <p class="hero-en">Motion UX: Designing Robot Motion as Experience</p>
+    <div class="hero-meta">
+      <div><span class="meta-key">Date</span>2026-05-18</div>
+      <div><span class="meta-key">Version</span>v0 draft</div>
+      <div><span class="meta-key">Category</span>Definitive</div>
+      <div><span class="meta-key">Series</span>Pixels to Motors / Motion UX</div>
+    </div>
+  </section>
+
+  <!-- ════ Intro ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">00</span><span class="section-label">イントロ</span></div>
+    <div class="todo-placeholder">
+      <strong>TODO ── イントロ</strong>
+      <!-- ここに何を書くか:
+           読者に「なぜこの記事を読むべきか」を 2〜3 段落で伝える。
+           UI/UX デザイナー29年の蓄積を持つ自分が、なぜ今 Motion UX を
+           定義しに来たのかを、Pixels to Motors の文脈と共に提示する。
+           この記事が 100記事 + 10動画の中心ハブであることを明示する。 -->
+    </div>
+  </section>
+
+  <!-- ════ Section 01 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">01</span><span class="section-label">定義</span></div>
+    <h2 class="section-heading">Motion UX とは何か</h2>
+    <div class="todo-placeholder">
+      <strong>TODO ── 定義</strong>
+      <!-- ここに何を書くか:
+           Motion UX を一文で定義する。
+           「Motion UX とは、ロボットの動きを体験として設計する職能・思想である」
+           を起点に、2〜3段落で展開する。
+           UI/UX デザインの29年の蓄積を継承する点を明示。
+           Robotics UX / Physical AI UX との位置関係も簡潔に。 -->
+    </div>
+  </section>
+
+  <!-- ════ Section 02 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">02</span><span class="section-label">時代背景</span></div>
+    <h2 class="section-heading">なぜ今か ── Physical AI 時代の到来</h2>
+    <div class="todo-placeholder">
+      <strong>TODO ── なぜ今か</strong>
+      <!-- ここに何を書くか:
+           Physical AI / Embodied AI が産業領域に降りてきた今、
+           「動き」が UI/UX の対象になり始めている事実を提示する。
+           Boston Dynamics / NVIDIA Omniverse / Field AI など海外動向と接続。
+           日本の Highlanders / VUILD などの国内事例にも触れる余地を残す。 -->
+    </div>
+  </section>
+
+  <!-- ════ Section 03 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">03</span><span class="section-label">差別化</span></div>
+    <h2 class="section-heading">UI/UX との違い</h2>
+    <div class="todo-placeholder">
+      <strong>TODO ── UI/UX との違い</strong>
+      <!-- ここに何を書くか:
+           従来の UI/UX が「画面上の体験」を扱うのに対し、
+           Motion UX は「物理空間の体験」を扱う。
+           具体的な対比表（操作対象 / 評価軸 / 失敗の現れ方 / ツール）が
+           あると効くので、後で表組みウィジェットを足す前提で構成。
+           ここでは差別化の論点を 3〜4 個に絞って提示する。 -->
+    </div>
+  </section>
+
+  <!-- ════ Section 04 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">04</span><span class="section-label">原則</span></div>
+    <h2 class="section-heading">3つの原則 ── 精度より体験 / iPhone入口 / 体験から逆算</h2>
+    <div class="todo-placeholder">
+      <strong>TODO ── 3つの原則</strong>
+      <!-- ここに何を書くか:
+           Motion UX の3原則を、それぞれ独立した小節で提示する：
+             1. 精度より体験 ── 数値スペックではなく主観評価を判断基準にする
+             2. iPhone を入口にする ── 高価な専用機材ではなく iPhone から始める
+             3. 体験から逆算する ── 「こうあるべき動き」から制御を設計する
+           各原則は Pixels to Motors の3本柱と接続する。
+           それぞれに DAY ログの具体例リンクを 1〜2 本添えると重みが出る。 -->
+    </div>
+  </section>
+
+  <!-- ════ Section 05 ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">05</span><span class="section-label">実例</span></div>
+    <h2 class="section-heading">関連記事・実例リンク集</h2>
+    <!-- TODO: 新記事を書くたびに、ここに <li> を追記していく。
+         分類タグ（DAY ログ / 考察 / 比較 / ケーススタディ）を付ける運用にする。 -->
+    <ul class="related-list"></ul>
+  </section>
+
+  <!-- ════ Closing ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">06</span><span class="section-label">クロージング</span></div>
+    <h2 class="section-heading">読者へ ── どこから読み始めればいいか</h2>
+    <div class="todo-placeholder">
+      <strong>TODO ── クロージング</strong>
+      <!-- ここに何を書くか:
+           読者を次の記事（②DAYログ / ③考察 / ④比較 / ⑤ケーススタディ）へ
+           誘導する分岐ナビゲーションを置く。
+           「実装の現場が見たい人 → DAYログ」「思想に触れたい人 → 考察」
+           「業界文脈で読みたい人 → 比較批評」のような誘導文を 3〜4 個。
+           最後に「この記事は生きたドキュメントです」と書いて、月1更新の
+           方針を読者と共有する。 -->
+    </div>
+  </section>
+
+  <!-- ════ Revision ════ -->
+  <section class="article-section">
+    <div class="section-marker"><span class="section-num">07</span><span class="section-label">改訂履歴</span></div>
+    <ul class="revision-log">
+      <li>2026-05-18 v0 骨格作成（Claude Code）</li>
+    </ul>
+  </section>
+
+  <footer class="footer">
+    <div>© ADAPT DESIGN / Pixels to Motors</div>
+    <div>UX × AI × ROBOTICS</div>
+  </footer>
+
+</div>
+
+</body>
+</html>
