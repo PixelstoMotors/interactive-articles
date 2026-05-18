@@ -6,6 +6,14 @@
 <title>Motion UX とは何か ── ロボットの動きを体験として設計する | Pixels to Motors</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta name="description" content="ロボットの動きを体験として設計する職能、Motion UX。学習済みモデルをもらって、動きの品質と体験を作る ── Pixels to Motors の立つ空白を、29 年デザイナーが定義する。">
+<meta name="author" content="エイイチ（島津栄一） / ADAPT DESIGN">
+<meta property="og:title" content="Motion UX とは何か ── ロボットの動きを体験として設計する">
+<meta property="og:description" content="ロボットの動きを体験として設計する職能、Motion UX。学習済みモデルをもらって、動きの品質と体験を作る ── Pixels to Motors の立つ空白を、29 年デザイナーが定義する。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://pixelstomotors.github.io/interactive-articles/motion-ux-definitive/">
+<!-- TODO: og:image は別途用意(Phase 4 で対応) -->
+<meta name="twitter:card" content="summary_large_image">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -85,6 +93,77 @@ body {
   font-size: 9.5px; letter-spacing: 0.14em;
   text-transform: uppercase; opacity: 0.6;
   margin-right: 8px;
+}
+
+/* Body typography */
+.article-section p {
+  font-size: 15px;
+  line-height: 1.85;
+  margin-bottom: 1.4em;
+  letter-spacing: 0.02em;
+}
+.article-section p:last-child { margin-bottom: 0; }
+
+.article-section strong {
+  font-weight: 700;
+}
+
+.article-section blockquote {
+  border-left: 3px solid var(--black);
+  padding: 16px 0 16px 24px;
+  margin: 28px 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  background: transparent;
+}
+
+.article-section ul:not(.related-list):not(.revision-log) {
+  list-style: none;
+  margin: 0 0 1.4em 0;
+  padding: 0;
+}
+.article-section ul:not(.related-list):not(.revision-log) li {
+  position: relative;
+  padding: 8px 0 8px 24px;
+  font-size: 15px;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+}
+.article-section ul:not(.related-list):not(.revision-log) li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18px;
+  width: 12px;
+  height: 1.5px;
+  background: var(--black);
+}
+
+/* H3 (sub-section heading inside a section) */
+.subsection-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(15px, 1.9vw, 17px);
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 40px 0 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-light);
+  letter-spacing: 0.005em;
+}
+
+/* H5 (small structural note inside a section) */
+.note-heading {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-dark);
+  margin: 36px 0 14px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--gray-light);
 }
 
 /* Section */
@@ -221,85 +300,116 @@ body {
   <section class="article-section">
     <div class="section-marker"><span class="section-num">01</span><span class="section-label">定義</span></div>
     <h2 class="section-heading">Motion UX とは何か</h2>
-    <div class="todo-placeholder">
-      <strong>TODO ── 定義</strong>
-      <!-- ここに何を書くか:
-           Motion UX を一文で定義する。
-           「Motion UX とは、ロボットの動きを体験として設計する職能・思想である」
-           を起点に、2〜3段落で展開する。
-           UI/UX デザインの29年の蓄積を継承する点を明示。
-           Robotics UX / Physical AI UX との位置関係も簡潔に。 -->
-    </div>
+    <blockquote>
+      Motion UX とは、ロボットやエージェントの「動き」そのものをひとつの体験として設計する職能であり、同時にその設計を貫く思想である。
+    </blockquote>
+    <p>ここでいう「動き」は、産業用ロボットアームの軌道に限らない。ヒューマノイドの所作、自律移動体の振る舞い、ドローンの旋回、ソフトロボットのしなり、そしてまだ名前のついていない多くの物理エージェントの挙動を含む。共通しているのは、人がそれを目で見て、身体で受けとめ、何かを感じる対象になっているという一点である。動きが知覚される瞬間、それは機械工学の問題ではなく、体験設計の問題になる。</p>
+    <p>人と画面のあいだに生まれる体験をデザインの対象として扱う ── UI/UX という呼び方がこの 10 年ほどで業界に定着し、方法論がひとつの職能として整理されてきた。Motion UX はその延長線上にある。ただし対象が画面から物理空間に移り、扱う変数が色やレイアウトから速度や軌道や姿勢へと拡張される。29 年デザイナーとして現場にいた人間として言うなら、ここで起きているのは「新しい職能の誕生」ではなく、「既存の職能の射程が物理空間に届いた」という事態に近い。動きは、いま、デザインの対象になりつつある。</p>
+    <p>そして職能だけでは足りない。動きを体験として設計するためには、何を優先するかという思想がいる。スペック表に並ぶ精度や速度の数値を最大化することと、人がその動きを見て「掴めた」と感じることは、別の問題だ。Motion UX はこの後者に賭ける。精度より体験の成立を優先する ── この一行が、職能を職能たらしめる思想として、すべての判断の上に置かれる。</p>
+
+    <h5 class="note-heading">Robotics UX / Physical AI UX との関係</h5>
+    <p>Motion UX は、Pixels to Motors というプロジェクト傘の下で育てている 3 つの枝概念のうちのひとつだ。残りの 2 つとの関係はこう整理している。</p>
+    <ul>
+      <li><strong>Motion UX</strong> は、動きそのものを設計対象とする層。本記事の主題。</li>
+      <li><strong>Robotics UX</strong> は、ロボットというハードウェアの存在を前提に、人間との関係全体(対話、設置、運用、信頼)を扱う層。</li>
+      <li><strong>Physical AI UX</strong> は、Physical AI ── 物理世界で学習・推論・行動する AI ── を前提に、その振る舞いと環境との関係を扱う層。</li>
+    </ul>
+    <p>3 つは入れ子になっていて、いちばん内側に Motion UX がある。動きが体験として成立しなければ、その外側の Robotics UX も Physical AI UX も成立しない。だからまず動きから定義する。</p>
   </section>
 
   <!-- ════ Section 02 ════ -->
   <section class="article-section">
     <div class="section-marker"><span class="section-num">02</span><span class="section-label">時代背景</span></div>
     <h2 class="section-heading">なぜ今か ── Physical AI 時代の到来</h2>
-    <div class="todo-placeholder">
-      <strong>TODO ── なぜ今か</strong>
-      <!-- ここに何を書くか:
-           Physical AI / Embodied AI が産業領域に降りてきた今、
-           「動き」が UI/UX の対象になり始めている事実を提示する。
-           Boston Dynamics / NVIDIA Omniverse / Field AI など海外動向と接続。
-           日本の Highlanders / VUILD などの国内事例にも触れる余地を残す。 -->
-    </div>
+    <p>2026 年に入ってから、ロボットの「動き」をめぐる風景が一気に変わった。</p>
+    <p>動きを担う基盤モデルが、この 5 ヶ月で立て続けに発表されてきた。</p>
+    <p>1 月の CES 2026 で Boston Dynamics は商用版 Atlas を発表し、Hyundai と Google DeepMind に出荷される 2026 年分のフリート枠はすでに埋まった。Atlas には Gemini Robotics 基盤モデルが組み込まれ、知覚・タスク遂行・自律動作を担う。3 月の NVIDIA GTC では、Cosmos 3 という world foundation model が発表され、合成世界の生成と行動シミュレーションを組み合わせて学習データを大規模に作れるようになった。4 月には GR00T N1.7 が 3B パラメータの open VLA として公開され、2 万時間超のヒト視点動画によるスケーリング則が走り始めた。5 月、Genesis AI が GENE-26.5 を発表、人間レベルの物理操作を目標に置いた基盤モデルが公開された。</p>
+    <p>数年前まで「ロボットがどう動くか」は研究室の話だった。それがいま、量産・出荷・契約済みフリートの話になっている。EgoScale の論文(2026 年 2 月)は、ロボティクス基盤モデルが LLM と同じデータ駆動型のスケーリング則に従うという初の強い実証を与えた。LLM で起きた累積的な能力獲得の曲線が、Physical AI でも同じように立ち上がりつつある。</p>
+    <p>この潮流が解いている問題と、解いていない問題のあいだには、はっきりした境界がある。基盤モデルが解こうとしているのは「どう知覚し、何を計画し、どんな軌道を生成するか」という認識・推論・運動生成の問題だ。これは膨大な計算資源と embodied data を要する勝負で、すでに NVIDIA、Boston Dynamics、Physical Intelligence、Genesis AI、AGIBOT といったプレイヤーが投資し終えた領域だ。学習済みモデルは、今後 1〜2 年で多くのロボットに降りてくる。</p>
+    <p>降りてきたあとに残る問題は、別の場所にある。そこには空白がある。</p>
+    <p>正解の動きは、最適解の動きとは違う。</p>
+    <p>ヒトの手前で減速するか、まっすぐ突っ込むかで、同じ成功率でも体験は別物になる。物を置く瞬間に音が立つか、静かに着地するか、それも体験の問題だ。「掴めた」と人が感じるかどうかは、軌道計算では出てこない。Atlas が人間に似せない形態を選んだのは、興味深い設計判断だと思っている ── 関節の可動範囲を人間と揃える必要はない、ロボットはロボットであるべきで、人を模倣するためにあるのではない、という思想がそこにある。動きの選択は、もう機械工学だけの問題ではない。ここは UX とデザインの問題でもある。</p>
+    <p>これが、いま Motion UX を定義しに来た理由だ。基盤モデルは出力として運動指令を吐く。その指令を、人が見て安心できる動き、文脈に合った動き、目的に対して納得できる動きに整える層が、現状の業界マップにはまだ書き込まれていない。VUILD の秋吉浩気さんは「建築の民主化」を掲げて、誰もがつくり手になれる社会を志向してきた。建築領域で起きてきたこの動きは、今、ロボティクスの領域で同じ形で立ち上がろうとしている。学習済みモデルをもらって、動きの品質と体験を作る ── この空白に最初から立つことを、Pixels to Motors は選んでいる。</p>
   </section>
 
   <!-- ════ Section 03 ════ -->
   <section class="article-section">
     <div class="section-marker"><span class="section-num">03</span><span class="section-label">差別化</span></div>
     <h2 class="section-heading">UI/UX との違い</h2>
-    <div class="todo-placeholder">
-      <strong>TODO ── UI/UX との違い</strong>
-      <!-- ここに何を書くか:
-           従来の UI/UX が「画面上の体験」を扱うのに対し、
-           Motion UX は「物理空間の体験」を扱う。
-           具体的な対比表（操作対象 / 評価軸 / 失敗の現れ方 / ツール）が
-           あると効くので、後で表組みウィジェットを足す前提で構成。
-           ここでは差別化の論点を 3〜4 個に絞って提示する。 -->
-    </div>
+    <p>UI/UX が扱ってきたのは、人と画面のあいだに生まれる体験だった。Motion UX が扱うのは、人と物理空間で動くものとのあいだに生まれる体験である。対象が画面から物理空間に移れば、評価軸も、失敗の現れ方も、ツールも、すべて変わる。継承するものと、しないものも、はっきり分かれる。差分を 5 つの論点に整理する。</p>
+
+    <h3 class="subsection-heading">対象 ── ピクセルから物体へ</h3>
+    <p>UI/UX が扱う対象はピクセルだ。スクリーン上の長方形、テキスト、状態を表すアイコン、これらが構成する画面。Motion UX が扱う対象は物体である。アームの先端、把持されるコップ、机の上を移動する物、人とロボットのあいだに広がる三次元空間。ピクセルは描画の問題だが、物体は物理法則の中にいる。重力があり、慣性があり、摩擦があり、そして人が身体で感じ取る相手になる。</p>
+
+    <h3 class="subsection-heading">評価軸 ── 完了率から「いい動きだったか」へ</h3>
+    <p>UI/UX の評価軸はある程度成熟している。タスク完了率、操作時間、誤操作率、SUS スコア、NPS。Motion UX で同じ指標を取ろうとすると、すぐに足りなくなる。把持の成功率は取れるが、「いい掴み方だったか」は数値化しにくい。動作時間は計れるが、「安心して見ていられる動きだったか」は計れない。Motion UX の評価は、計測値と主観評価のあいだに重心を置く設計になる。精度の数値は後追いで足せばいいが、「掴めた」と人が感じる瞬間の主観評価は、最初に取りに行かないと取れない。</p>
+
+    <h3 class="subsection-heading">失敗の現れ方 ── エラー画面から物理的な事故へ</h3>
+    <p>画面の失敗は、画面が止まる。Motion UX の失敗は、物が落ちる。</p>
+    <p>画面の失敗はエラー画面、フリーズ、タップミスとして現れる。やり直せる。Motion UX の失敗は、衝突、落下、把持失敗、人にぶつかる、として現れる。やり直しの前に、物が壊れているか、人が怪我をしているかもしれない。この非対称性は、設計プロセスの形そのものを変える。シミュレーション段階で潰せる失敗は徹底的に潰す。実機での試行は、失敗のコストを織り込んだ手順で進める ── 失敗を観察する設計と、失敗を起こさない設計の両方を、最初から織り込んでおく必要がある。</p>
+
+    <h3 class="subsection-heading">ツール ── 整備された道具から、これから整備される道具へ</h3>
+    <p>UI/UX のツールセットはこの 10 年でかなり整備された。デザインツール、プロトタイピングツール、ユーザビリティテストの方法論、定量・定性両方の評価手段が、職能の輪郭と並走する形で揃ってきた。Motion UX のツールセットはまだ整備されていない。シミュレーション環境、実機との同期、人の体験を捉える評価手段、そのどれもが「業界標準」と呼べる段階にない。私自身も今、iPhone と Unity と mechArm という個人で揃えられる範囲の組み合わせで進めているが、これは Pixels to Motors の固有解であって、Motion UX の標準解ではない。標準は、これから 5 年から 10 年かけて、複数のプレイヤーが手を動かす中で立ち上がっていく。</p>
+
+    <h3 class="subsection-heading">継承するもの、しないもの</h3>
+    <p>UI/UX デザインから継承するのは、観察、反復、ユーザー中心の発想、そして「実際に触れて確かめる」という基本姿勢である。画面以外の対象を観察する仕事を続けてきて確信しているのは、この 3 つは画面の仕事に固有のものではない、ということだ。観察する対象が画面の中にいるか物理空間にいるかは変わっても、観察すること自体の価値は変わらない。Motion UX はこの蓄積の上に立つ。</p>
+    <p>継承しないのは、画面前提の固定的な方法論である。情報設計の階層、画面遷移の状態管理、レスポンシブブレークポイント、A/B テストの統計的設計 ── これらは画面という対象に最適化された道具で、物理空間にそのまま持ち込もうとすると壊れる。Motion UX は新しい道具を作りながら進む。シミュレーション環境でのプロトタイピング、視覚サーボでの実機検証、こうした手順は今まさに発明されつつある段階にある。</p>
+    <p>UI/UX が職能として確立されるのに 10 年かかった。Motion UX が同じ場所に立つには、これから少なくとも同じくらいの時間が必要だろう。本記事は、その始点に旗を立てるために書かれている。</p>
+
+    <h5 class="note-heading">補足 ── インタラクティブな対比表</h5>
+    <p>UI/UX と Motion UX の対比は、別記事でインタラクティブな図解として展開する予定だ。本記事公開後の関連記事リンクに追記する。</p>
   </section>
 
   <!-- ════ Section 04 ════ -->
   <section class="article-section">
     <div class="section-marker"><span class="section-num">04</span><span class="section-label">原則</span></div>
-    <h2 class="section-heading">3つの原則 ── 精度より体験 / iPhone入口 / 体験から逆算</h2>
-    <div class="todo-placeholder">
-      <strong>TODO ── 3つの原則</strong>
-      <!-- ここに何を書くか:
-           Motion UX の3原則を、それぞれ独立した小節で提示する：
-             1. 精度より体験 ── 数値スペックではなく主観評価を判断基準にする
-             2. iPhone を入口にする ── 高価な専用機材ではなく iPhone から始める
-             3. 体験から逆算する ── 「こうあるべき動き」から制御を設計する
-           各原則は Pixels to Motors の3本柱と接続する。
-           それぞれに DAY ログの具体例リンクを 1〜2 本添えると重みが出る。 -->
-    </div>
+    <h2 class="section-heading">3 つの原則</h2>
+    <p>Motion UX を職能として立ち上げるなら、判断の上に置く原則がいる。ここでは 3 つ提示する。どれも、29 年デザイナーをやってきた経験と、Pixels to Motors で物理空間に出てから得た知見の両方から抽出したものだ。一般原則として書くが、抽象論にとどめないために、最後に私自身の実践構成を添える。</p>
+
+    <h3 class="subsection-heading">原則 1 ── 精度より体験の成立を優先する</h3>
+    <p>スペック表に並ぶ精度の数値を最大化することと、人がその動きを見て「掴めた」「届いた」「安心できた」と感じることは、別の問題である。前者は機械工学が長く取り組んできた領域で、計測方法も評価基準も成熟している。後者は、対象が機械工学の外にある。人の知覚と納得の問題だからだ。</p>
+    <p>Motion UX は後者に賭ける。理由は単純で、精度はあとからお金で解決できるが、体験の成立は最初に取りに行かないと取れないからだ。精度 0.5mm を 0.1mm に上げる作業は、より高価なアクチュエータと、よりよいキャリブレーションと、より高精度なセンサで進められる。一方で「人が見て安心できる動きとはどんな動きか」は、設計の出発点でそれを判断基準に据えていなければ、最後まで取れない。後付けで上から塗っても、構造的に成立しない。</p>
+    <p>だから、精度より体験を先に置く。これは妥協ではなく、設計の順序である。</p>
+
+    <h3 class="subsection-heading">原則 2 ── シミュレーションと実機を往復する</h3>
+    <p>物理空間の体験設計には、片方の世界だけでは見えない領域がある。</p>
+    <p>シミュレーション環境は、失敗のコストがゼロに近い。何百回衝突させようが、把持に失敗しようが、ハードは痛まない。だがシミュレーションだけでは取れないものがある。実機特有の振動、サーボの微妙な遅延、グリッパーの個体差、光の反射でカメラが見失う瞬間、こうしたものは現実の側にしかない。</p>
+    <p>実機は逆だ。情報は豊富にあるが、試行のコストが高い。物が壊れる、人が危ない、時間がかかる、再現性の確保が難しい。</p>
+    <p>Motion UX は、この両者を往復することで初めて成立する。シミュレーションで設計の仮説を立て、実機で検証し、実機で発見した現象をシミュレーションに戻して再設計する。どちらか片方だけで完結させようとすると、必ずどこかで破綻する ── シミュレーションだけなら現実に出たときに壊れ、実機だけなら設計の選択肢が早く枯れる。</p>
+
+    <h3 class="subsection-heading">原則 3 ── 体験から逆算して設計する</h3>
+    <p>通常のロボット制御の設計は、ハードウェアの仕様から始まる。可動範囲、可搬重量、サーボの応答速度、センサの分解能、これらの組み合わせの中で「何ができるか」を積み上げていく。</p>
+    <p>Motion UX は順序を逆にする。「こうあるべき動き」を最初に置く。人がこの動きを見たときに何を感じるべきか、どんな振る舞いが文脈に対して納得できるか、ここから逆算して、必要な軌道、速度プロファイル、姿勢遷移を設計に落とす。ハードウェアの制約は、その逆算の中で当たる現実として扱う。制約が当たれば、設計を妥協するか、ハードウェアを変えるか、別の体験設計に乗り換えるかを判断する。</p>
+    <p>この順序の違いは、最終的な動きの質を決定的に変える。仕様から積み上げた動きは、機能しているだけだ。「いい動き」になるのは、体験から逆算した動きの方である。</p>
+
+    <h3 class="subsection-heading">私の実践 ── iPhone と Unity と小型アームで進む</h3>
+    <p>この 3 つの原則を、私は今、個人で揃えられる範囲の機材で実践している。iPhone(Continuity Camera と Iriun Webcam の 2 台)、Unity でのシミュレーション環境、mechArm 270 Pi という小型のアーム ── これは Motion UX の標準解ではなく、Pixels to Motors の固有解である。</p>
+    <p>なぜこの構成かというと、ひとつにはコストの制約があるが、それだけではない。ロボット開発がエンジニアだけの仕事ではないという仮説を、自分の身体で検証するためには、誰でも揃えられる機材で成立を示す必要がある。研究所のフル装備で「掴めました」と言っても、それは別の世界の話になる。iPhone と Unity で掴めた、と言えたとき、初めて参入障壁の話に踏み込める。</p>
+    <p>固有実践と一般原則のあいだに距離があるのは健全なことだと思っている。Motion UX という職能が広がっていくとき、他のプレイヤーは別の機材で、別の構成で、同じ原則を実践するだろう。それが起きたとき、Motion UX は固有解の集合ではなく、職能としての輪郭を持ち始める。</p>
   </section>
 
   <!-- ════ Section 05 ════ -->
   <section class="article-section">
-    <div class="section-marker"><span class="section-num">05</span><span class="section-label">実例</span></div>
-    <h2 class="section-heading">関連記事・実例リンク集</h2>
-    <!-- TODO: 新記事を書くたびに、ここに <li> を追記していく。
-         分類タグ（DAY ログ / 考察 / 比較 / ケーススタディ）を付ける運用にする。 -->
-    <ul class="related-list"></ul>
+    <div class="section-marker"><span class="section-num">05</span><span class="section-label">道案内</span></div>
+    <h2 class="section-heading">読み進める順序 ── どこから降りていくか</h2>
+    <p>この記事は Motion UX という職能を定義する場所であって、実例の集積場所ではない。実例 ── 日々の実装ログ、考察、比較批評、ケーススタディ ── は、Pixels to Motors のトップページに集約してある。本記事を読み終えた読者が次に何を読むかは、関心の入り口によって変わる。</p>
+    <p>実装の現場が見たいなら、DAY ログから入るのがいい。失敗の生々しさ、判断の迷い、原則が実際の手の中でどう揺れるかを、毎日 1 本ずつ残している。定義された Motion UX が現場でどう成立する/しないかは、ここでしか見られない。</p>
+    <p>考察記事は、思想の側からの入り口になる。なぜこの判断に至ったか、設計の順序をどう決めたか、29 年デザイナーとしての視点が物理空間に出てどう変容したか。ハブ記事では削ぎ落とした思考過程が残されている。</p>
+    <p>業界文脈を追いたい読者には、比較記事を勧める。大手プレイヤーが Motion UX の隣接領域でどう動いているかを観察して、自分の立ち位置を確認する、そういう記事が集まる。</p>
+    <p>ひとつの試みが完結したときには、ケーススタディとして書き直す。複数の DAY ログにまたがる長い試みを、ひとつの物語として読める形にしたものだ。</p>
+    <p>すべての一覧は、Pixels to Motors のトップページから辿れる。本記事は、その入口に置かれた地図のようなものである。</p>
   </section>
 
   <!-- ════ Closing ════ -->
   <section class="article-section">
-    <div class="section-marker"><span class="section-num">06</span><span class="section-label">クロージング</span></div>
-    <h2 class="section-heading">読者へ ── どこから読み始めればいいか</h2>
-    <div class="todo-placeholder">
-      <strong>TODO ── クロージング</strong>
-      <!-- ここに何を書くか:
-           読者を次の記事（②DAYログ / ③考察 / ④比較 / ⑤ケーススタディ）へ
-           誘導する分岐ナビゲーションを置く。
-           「実装の現場が見たい人 → DAYログ」「思想に触れたい人 → 考察」
-           「業界文脈で読みたい人 → 比較批評」のような誘導文を 3〜4 個。
-           最後に「この記事は生きたドキュメントです」と書いて、月1更新の
-           方針を読者と共有する。 -->
-    </div>
+    <div class="section-marker"><span class="section-num">06</span><span class="section-label">中継点</span></div>
+    <h2 class="section-heading">この記事は、ここで終わらない</h2>
+    <p>Motion UX という職能の輪郭は、まだ確定していない。本記事で書いたことは、2026 年 5 月時点の私の理解であって、それ以上のものではない。来月、半年後、3 年後に同じ問いを書いたら、別の答えが出るはずだ。</p>
+    <p>だから本記事は、定義を一度書いて終わる文章として置かない。生きたドキュメントとして、現場で起きた発見と、業界で進む動きを受けて、改訂を重ねていく。Pixels to Motors の DAY ログから新しい知見が上がったとき、業界で新しい潮流が生まれたとき、本記事に戻ってきて書き直す。改訂の履歴は最後のセクションに残す。読者は、定義そのものがどう変わっていくかを追える形にしてある。</p>
+    <p>そしてこの記事は、私一人で育てるものでもないと思っている。</p>
+    <p>Motion UX という言葉が、私の手元だけで完結する固有名詞であるうちは、職能としては立ち上がらない。読者の誰かが、別の文脈で、別の機材で、別の問いから、同じ場所に立つことが起きて初めて、職能としての輪郭ができる。本記事への異論、別の定義、補完する観点、すべてを受け取りたい。書き手と読者のあいだの往復で、定義は徐々に強くなる。</p>
+    <p>ロボット開発はエンジニアだけのものではない、というのは Pixels to Motors の出発点の仮説だった。Motion UX という職能を立てに来たのは、その仮説を、自分一人の手元ではなく、業界の言葉として残すためである。</p>
+    <p>動きが知覚される瞬間、それは機械工学の問題ではなく、体験設計の問題になる。だから、書きながら、動かしながら、観察しながら、ここから進む。</p>
   </section>
 
   <!-- ════ Revision ════ -->
@@ -307,6 +417,7 @@ body {
     <div class="section-marker"><span class="section-num">07</span><span class="section-label">改訂履歴</span></div>
     <ul class="revision-log">
       <li>2026-05-18 v0 骨格作成（Claude Code）</li>
+      <li>2026-05-18 v0.7 本文執筆完了（セクション 01〜06）</li>
     </ul>
   </section>
 
